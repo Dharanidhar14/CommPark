@@ -26,7 +26,8 @@ export type Amenity =
   | 'accessible'
   | 'gated'
   | 'paved'
-  | '24_7_access';
+  | '24_7_access'
+  | 'water_wash';
 
 export type ApprovalStatus = 'approved' | 'pending' | 'rejected';
 
@@ -43,6 +44,13 @@ export interface ParkingOwner {
   responseRatePercent: number;
   isVerified: boolean;
   communityName?: string;
+  joinedYear?: number;
+}
+
+export interface SpaceDimensions {
+  lengthMeters: number;
+  widthMeters: number;
+  heightClearanceMeters?: number;
 }
 
 export interface ParkingSpace {
@@ -50,8 +58,11 @@ export interface ParkingSpace {
   name: string;
   description: string;
   address: string;
+  locality: string;
   neighborhood: string;
   city: string;
+  state: string;
+  postalCode: string;
   coordinates: Coordinates;
   distanceKm: number;
   category: ParkingCategory;
@@ -74,4 +85,8 @@ export interface ParkingSpace {
   guardVerificationReward?: number;
   owner: ParkingOwner;
   rules: string[];
+  dimensions: SpaceDimensions;
+  operatingHours: string;
+  nearbyLandmarks: string[];
+  isDemoData: boolean;
 }

@@ -1,10 +1,65 @@
 import { MOCK_PARKING_SPACES } from '../../constants/mockData';
 import { ParkingSpace } from '../../types/parking';
-import { DiscoveryFilters, SortOption } from './types';
+import { DiscoveryFilters, SortOption, SearchSuggestionItem } from './types';
+
+export const POPULAR_METRO_LOCALITIES = [
+  { id: 'loc_all', name: 'All Localities', city: 'Bengaluru / Mumbai' },
+  { id: 'loc_indiranagar', name: 'Indiranagar', city: 'Bengaluru', landmark: '100ft Road / CMH Hospital' },
+  { id: 'loc_koramangala', name: 'Koramangala', city: 'Bengaluru', landmark: 'Sony World Signal / Forum Mall' },
+  { id: 'loc_hsr', name: 'HSR Layout', city: 'Bengaluru', landmark: 'Sector 2 / BDA Complex' },
+  { id: 'loc_whitefield', name: 'Whitefield', city: 'Bengaluru', landmark: 'ITPL / EPIP Tech Zone' },
+  { id: 'loc_bandra', name: 'Bandra West', city: 'Mumbai', landmark: 'Pali Hill / Carter Road' },
+  { id: 'loc_bkc', name: 'Bandra Kurla Complex (BKC)', city: 'Mumbai', landmark: 'Financial District' },
+];
+
+export const RECENT_SEARCHES_MOCK = [
+  'Indiranagar 100ft Road, Bengaluru',
+  'Sony World Junction, Koramangala',
+  'Whitefield ITPL Tech Zone',
+  'Pali Hill, Bandra West',
+];
+
+export const SEARCH_SUGGESTIONS_MOCK: SearchSuggestionItem[] = [
+  {
+    id: 'sug_1',
+    title: 'Indiranagar 100 Feet Road',
+    subtitle: 'Defence Colony • Food & Shopping Hub, Bengaluru',
+    type: 'locality',
+    query: 'Indiranagar',
+  },
+  {
+    id: 'sug_2',
+    title: 'Sony World Junction',
+    subtitle: '80 Feet Road, Koramangala 4th Block, Bengaluru',
+    type: 'landmark',
+    query: 'Koramangala',
+  },
+  {
+    id: 'sug_3',
+    title: 'Prestige ITPL Tech Zone',
+    subtitle: 'Whitefield Main Road, Bengaluru',
+    type: 'landmark',
+    query: 'Whitefield',
+  },
+  {
+    id: 'sug_4',
+    title: 'HSR Layout Sector 2 & BDA',
+    subtitle: 'Residential Gated Condos, Bengaluru',
+    type: 'locality',
+    query: 'HSR Layout',
+  },
+  {
+    id: 'sug_5',
+    title: 'Bandra Pali Hill',
+    subtitle: 'Nargis Dutt Road, Mumbai',
+    type: 'locality',
+    query: 'Bandra West',
+  },
+];
 
 export function getFilteredParkingSpaces(
   filters: DiscoveryFilters = {},
-  sort: SortOption = 'distance'
+  sort: SortOption = 'recommended'
 ): ParkingSpace[] {
   let results = [...MOCK_PARKING_SPACES];
 
@@ -14,7 +69,16 @@ export function getFilteredParkingSpaces(
       (s) =>
         s.name.toLowerCase().includes(q) ||
         s.address.toLowerCase().includes(q) ||
-        s.neighborhood.toLowerCase().includes(q)
+        s.locality.toLowerCase().includes(q) ||
+        s.neighborhood.toLowerCase().includes(q) ||
+        s.city.toLowerCase().includes(q) ||
+        s.nearbyLandmarks.some((l) => l.toLowerCase().includes(q))
+    );
+  }
+
+  if (filters.locality && filters.locality !== 'all' && filters.locality !== 'All Localities') {
+    results = results.filter(
+      (s) => s.locality.toLowerCase() === filters.locality?.toLowerCase()
     );
   }
 
@@ -34,8 +98,24 @@ export function getFilteredParkingSpaces(
     results = results.filter((s) => s.amenities.includes('ev_charging'));
   }
 
-  if (filters.maxPrice) {
-    results = results.filter((s) => s.pricePerHour <= (filters.maxPrice ?? 100));
+  if (filters.securityGuardOnly) {
+    results = results.filter((s) => s.securityGuardOnSite);
+  }
+
+  if (filters.vehicleType) {
+    results = results.filter((s) => s.supportedVehicles.includes(filters.vehicleType!));
+  }
+
+  if (filters.minPrice !== undefined) {
+    results = results.filter((s) => s.pricePerHour >= filters.minPrice!);
+  }
+
+  if (filters.maxPrice !== undefined) {
+    results = results.filter((s) => s.pricePerHour <= filters.maxPrice!);
+  }
+
+  if (filters.maxDistanceKm !== undefined) {
+    results = results.filter((s) => s.distanceKm <= filters.maxDistanceKm!);
   }
 
   // Sorting
@@ -50,8 +130,16 @@ export function getFilteredParkingSpaces(
       results.sort((a, b) => b.rating - a.rating);
       break;
     case 'distance':
-    default:
       results.sort((a, b) => a.distanceKm - b.distanceKm);
+      break;
+    case 'recommended':
+    default:
+      // Weighting by rating, availability, and distance
+      results.sort((a, b) => {
+        const scoreA = (a.isAvailable ? 10 : 0) + a.rating * 2 - a.distanceKm;
+        const scoreB = (b.isAvailable ? 10 : 0) + b.rating * 2 - b.distanceKm;
+        return scoreB - scoreA;
+      });
       break;
   }
 

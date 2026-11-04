@@ -15,12 +15,14 @@ export interface ParkingPriceProps {
 export const ParkingPrice: React.FC<ParkingPriceProps> = ({
   price,
   period = 'hr',
-  currency = '$',
+  currency = '₹',
   variant = 'card',
   isSelected = false,
   style,
 }) => {
   const { colors, radius, spacing, isDark } = useTheme();
+
+  const formattedPrice = Number.isInteger(price) ? `${currency}${price}` : `${currency}${price.toFixed(2)}`;
 
   if (variant === 'floating') {
     // Dark floating map price pill, turns Electric Lime when selected
@@ -46,7 +48,7 @@ export const ParkingPrice: React.FC<ParkingPriceProps> = ({
         ]}
       >
         <AppText variant="caption" weight="extraBold" color={textColor} style={styles.tabular}>
-          {currency}{price.toFixed(2)}
+          {formattedPrice}
         </AppText>
         <AppText variant="captionSmall" weight="medium" color={textColor} style={{ opacity: 0.8, marginLeft: 2 }}>
           /{period}
@@ -59,7 +61,7 @@ export const ParkingPrice: React.FC<ParkingPriceProps> = ({
     return (
       <View style={[styles.largeContainer, style]}>
         <AppText variant="display" weight="extraBold" color={colors.text} style={styles.tabular}>
-          {currency}{price.toFixed(2)}
+          {formattedPrice}
         </AppText>
         <AppText variant="body" color={colors.secondaryText} style={{ marginLeft: 4, marginBottom: 6 }}>
           /{period}
@@ -71,7 +73,7 @@ export const ParkingPrice: React.FC<ParkingPriceProps> = ({
   return (
     <View style={[styles.cardContainer, style]}>
       <AppText variant="h3" weight="extraBold" color={colors.text} style={styles.tabular}>
-        {currency}{price.toFixed(2)}
+        {formattedPrice}
       </AppText>
       <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginLeft: 2, marginBottom: 2 }}>
         /{period}

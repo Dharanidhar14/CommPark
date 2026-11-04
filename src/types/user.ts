@@ -22,9 +22,11 @@ export interface UserProfile {
   eligibleRoles: UserRole[];
   communityId?: string;
   communityName?: string;
+  city: string;
   wallet: UserWallet;
   ratingAsCustomer: number;
   ratingAsOwner?: number;
   totalBookingsCount: number;
   totalListingsCount: number;
+  isDemoProfile: boolean;
 }

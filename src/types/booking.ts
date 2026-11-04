@@ -1,4 +1,4 @@
-import { ParkingSpace, AccessType } from './parking';
+import { ParkingSpace, AccessType, VehicleType } from './parking';
 
 export type BookingStatus =
   | 'active'
@@ -13,7 +13,7 @@ export interface RegisteredVehicle {
   make: string;
   model: string;
   color: string;
-  type: string;
+  type: VehicleType;
   isDefault: boolean;
 }
 
@@ -29,12 +29,15 @@ export interface SecurityVerificationLog {
   notes?: string;
 }
 
+export type PaymentMethodType = 'upi' | 'card' | 'wallet';
+
 export interface Booking {
   id: string;
   bookingNumber: string;
   spaceId: string;
   space: ParkingSpace;
   vehicle: RegisteredVehicle;
+  bookingDate: string;
   startTime: string;
   endTime: string;
   durationHours: number;
@@ -44,9 +47,11 @@ export interface Booking {
   totalAmount: number;
   currency: string;
   status: BookingStatus;
+  paymentMethod: PaymentMethodType;
   qrCodeToken: string;
   accessCode?: string;
   specialInstructions?: string;
   verificationLog?: SecurityVerificationLog;
   createdAt: string;
+  isDemoData: boolean;
 }
