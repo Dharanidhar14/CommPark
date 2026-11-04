@@ -30,7 +30,7 @@ export default function SecurityVerifyScreen() {
     setScanStatus('scanning');
     setTimeout(() => {
       setScanStatus('verified');
-      setIncentiveEarned((prev) => prev + 1.50);
+      setIncentiveEarned((prev) => prev + 15);
     }, 800);
   };
 
@@ -93,7 +93,7 @@ export default function SecurityVerifyScreen() {
                 Earned Shift Incentive
               </AppText>
               <AppText variant="h3" color={colors.primary}>
-                +${(18.00 + incentiveEarned).toFixed(2)}
+                +₹{(180 + incentiveEarned).toFixed(2)}
               </AppText>
             </View>
           </View>
@@ -227,7 +227,7 @@ export default function SecurityVerifyScreen() {
               >
                 <AppIcon name="gift-outline" size={18} color={isDark ? colors.primary : '#49570B'} />
                 <AppText variant="captionSmall" weight="semiBold" style={{ marginLeft: 6, flex: 1 }}>
-                  Verification Recorded. +$1.50 incentive credited to guard wallet.
+                  Verification Recorded. +₹15 incentive credited to guard wallet.
                 </AppText>
               </View>
             </AppCard>
@@ -245,9 +245,9 @@ export default function SecurityVerifyScreen() {
             <AppCard style={{ marginBottom: 8, padding: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View>
-                  <AppText variant="bodyBold">Plate: 7XYZ892 (Tesla Model Y)</AppText>
+                  <AppText variant="bodyBold">Plate: KA 01 MJ 4821 (Tata Nexon EV)</AppText>
                   <AppText variant="captionSmall" color={colors.secondaryText}>
-                    Slot B-14 • Slot Host: Marcus Vance
+                    Slot B-14 • Host: Karthik Ramanathan
                   </AppText>
                 </View>
                 <AppBadge label="ARRIVED" variant="success" size="sm" />
@@ -257,7 +257,7 @@ export default function SecurityVerifyScreen() {
             <AppCard style={{ marginBottom: 8, padding: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View>
-                  <AppText variant="bodyBold">Plate: 4KLP119 (Honda Civic)</AppText>
+                  <AppText variant="bodyBold">Plate: KA 05 NE 3319 (Hyundai Creta)</AppText>
                   <AppText variant="captionSmall" color={colors.secondaryText}>
                     Slot A-08 • Expected 8:30 PM
                   </AppText>

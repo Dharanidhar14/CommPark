@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
   StyleSheet,
   Pressable,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -23,13 +24,17 @@ export default function DigitalPassScreen() {
   const { colors, spacing, radius, isDark } = useTheme();
 
   const activeBooking = useBookingStore((s) => s.activeBooking);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   if (!activeBooking) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <AppHeader title="Digital Pass" showBack />
-        <View style={{ padding: 24, alignItems: 'center' }}>
-          <AppText variant="h3">No Active Pass</AppText>
+        <View style={{ padding: 24, alignItems: 'center', marginTop: 40 }}>
+          <AppIcon name="ticket-outline" size={48} color={colors.secondaryText} />
+          <AppText variant="h3" style={{ marginTop: 16 }}>
+            No Active Pass
+          </AppText>
           <AppButton
             title="Browse Parking"
             onPress={() => router.replace('/(tabs)/explore' as any)}
@@ -59,6 +64,29 @@ export default function DigitalPassScreen() {
           },
         ]}
       >
+        {/* Prominent Demo Pass Watermark Banner */}
+        <View
+          style={[
+            styles.demoWatermark,
+            {
+              backgroundColor: 'rgba(234, 179, 8, 0.15)',
+              borderColor: colors.warning,
+              borderRadius: radius.md,
+              padding: spacing.sm,
+            },
+          ]}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <AppIcon name="warning" size={16} color={colors.warning} />
+            <AppText variant="captionSmall" weight="bold" color={colors.warning}>
+              SAMPLE / DEMO PASS
+            </AppText>
+          </View>
+          <AppText variant="captionSmall" color={colors.warning} style={{ marginTop: 2 }}>
+            This simulated digital pass is for demonstration purposes and cannot be used for unauthorized access to physical premises.
+          </AppText>
+        </View>
+
         {/* Main Digital Pass Ticket */}
         <View
           style={[
@@ -86,7 +114,7 @@ export default function DigitalPassScreen() {
               {activeBooking.space.name}
             </AppText>
             <AppText variant="body" color={colors.secondaryText} style={{ marginTop: 2 }}>
-              {activeBooking.space.address}
+              {activeBooking.space.address}, {activeBooking.space.locality}
             </AppText>
           </View>
 
@@ -113,7 +141,7 @@ export default function DigitalPassScreen() {
               SCAN AT BOOTH / GATE TERMINAL
             </AppText>
             <AppText variant="captionSmall" color={colors.secondaryText} align="center" style={{ marginTop: 2 }}>
-              Present to on-duty security guard or optical scanner
+              Present to on-duty security guard or automated scanner
             </AppText>
           </View>
 
@@ -134,18 +162,18 @@ export default function DigitalPassScreen() {
 
               <View style={styles.detailCol}>
                 <AppText variant="captionSmall" color={colors.secondaryText}>
-                  VALID UNTIL
+                  VALID DURATION
                 </AppText>
                 <AppText variant="h4" weight="bold" style={{ marginTop: 2 }}>
-                  11:30 PM
+                  {activeBooking.durationHours} Hours
                 </AppText>
                 <AppText variant="captionSmall" color={colors.success} weight="bold">
-                  Active (3h 15m left)
+                  Active Demo Window
                 </AppText>
               </View>
             </View>
 
-            {/* Access Code (if direct access) */}
+            {/* Access Code (if direct access or security verification) */}
             {activeBooking.accessCode && (
               <View
                 style={[
@@ -159,7 +187,7 @@ export default function DigitalPassScreen() {
                 ]}
               >
                 <AppText variant="captionSmall" color={colors.secondaryText}>
-                  GATE ACCESS CODE
+                  GATE PASSCODE
                 </AppText>
                 <AppText variant="h3" weight="extraBold" color={isDark ? colors.primary : '#49570B'}>
                   {activeBooking.accessCode}
@@ -179,8 +207,8 @@ export default function DigitalPassScreen() {
               ]}
             >
               <AppIcon name="shield-checkmark" size={16} color={isDark ? colors.primary : '#49570B'} />
-              <AppText variant="captionSmall" color={colors.text} style={{ marginLeft: 6, flex: 1 }}>
-                {activeBooking.space.accessInstructions}
+              <AppText variant="captionSmall" color={colors.text} style={{ marginLeft: 6, flex: 1, lineHeight: 16 }}>
+                {activeBooking.specialInstructions || activeBooking.space.accessInstructions}
               </AppText>
             </View>
           </View>
@@ -190,7 +218,7 @@ export default function DigitalPassScreen() {
         <View style={{ marginTop: spacing.xl, gap: 10 }}>
           <AppButton
             title="Get Turn-by-Turn Directions"
-            onPress={() => {}}
+            onPress={() => setIsDirectionsOpen(true)}
             variant="primary"
             size="lg"
             leftIcon={<AppIcon name="navigate-outline" size={20} color={colors.primaryForeground} />}
@@ -204,6 +232,82 @@ export default function DigitalPassScreen() {
           />
         </View>
       </ScrollView>
+
+      {/* Simulated Directions Modal */}
+      <Modal visible={isDirectionsOpen} transparent animationType="slide">
+        <View style={styles.modalBackdrop}>
+          <View
+            style={[
+              styles.directionsCard,
+              {
+                backgroundColor: colors.surface,
+                borderRadius: radius.card,
+                padding: spacing.lg,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <AppIcon name="navigate" size={20} color={isDark ? colors.primary : '#49570B'} />
+                <AppText variant="h3">Directions (Simulated)</AppText>
+              </View>
+              <Pressable onPress={() => setIsDirectionsOpen(false)} hitSlop={8}>
+                <AppIcon name="close" size={20} color={colors.secondaryText} />
+              </Pressable>
+            </View>
+
+            <View style={[styles.directionsInfo, { backgroundColor: colors.surfaceSubtle, borderRadius: radius.md, padding: spacing.md, marginTop: spacing.md }]}>
+              <AppText variant="bodyBold">{activeBooking.space.name}</AppText>
+              <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                {activeBooking.space.address}, {activeBooking.space.locality}
+              </AppText>
+              <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
+                <View>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>Distance</AppText>
+                  <AppText variant="bodyBold">{activeBooking.space.distanceKm || 0.8} km</AppText>
+                </View>
+                <View>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>Est. Drive Time</AppText>
+                  <AppText variant="bodyBold">~4 mins</AppText>
+                </View>
+                <View>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>Entry Gate</AppText>
+                  <AppText variant="bodyBold">Gate 2 / Main</AppText>
+                </View>
+              </View>
+            </View>
+
+            <View style={{ marginTop: spacing.md, gap: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <AppIcon name="radio-button-on" size={12} color={colors.primary} />
+                <AppText variant="caption" style={{ flex: 1 }}>
+                  Head northeast on 100 Feet Road toward Indiranagar Metro Station.
+                </AppText>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <AppIcon name="arrow-forward" size={12} color={colors.primary} />
+                <AppText variant="caption" style={{ flex: 1 }}>
+                  Turn right onto 12th Main Road; proceed 250 meters.
+                </AppText>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <AppIcon name="checkmark-circle" size={12} color={colors.success} />
+                <AppText variant="caption" style={{ flex: 1 }}>
+                  Arrive at {activeBooking.space.name} security barrier.
+                </AppText>
+              </View>
+            </View>
+
+            <AppButton
+              title="Close Directions"
+              variant="outline"
+              size="md"
+              onPress={() => setIsDirectionsOpen(false)}
+              style={{ marginTop: spacing.lg }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -215,10 +319,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
+  demoWatermark: {
+    borderWidth: 1,
+    marginBottom: 8,
+  },
   ticketContainer: {
     borderWidth: 2,
     overflow: 'hidden',
-    marginTop: 8,
+    marginTop: 4,
   },
   ticketHeader: {
     borderBottomWidth: 1,
@@ -261,4 +369,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'flex-end',
+  },
+  directionsCard: {
+    width: '100%',
+  },
+  directionsInfo: {},
 });
