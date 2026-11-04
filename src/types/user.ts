@@ -12,6 +12,34 @@ export interface UserWallet {
   pendingWithdrawals: number;
 }
 
+export interface SavedPlace {
+  id: string;
+  label: 'Home' | 'Office' | 'College' | 'Gym' | 'Custom';
+  customName?: string;
+  address: string;
+  locality: string;
+  city: string;
+  coordinates: { latitude: number; longitude: number };
+}
+
+export interface UserPreferences {
+  language: string;
+  preferredVehicleId?: string;
+  notificationToggles: {
+    bookingConfirmations: boolean;
+    bookingReminders: boolean;
+    paymentUpdates: boolean;
+    listingActivity: boolean;
+    communityUpdates: boolean;
+    promotional: boolean;
+  };
+  privacySettings: {
+    sharePlateWithGuards: boolean;
+    showProfilePhotoToHosts: boolean;
+    shareContactWithOwners: boolean;
+  };
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -28,5 +56,9 @@ export interface UserProfile {
   ratingAsOwner?: number;
   totalBookingsCount: number;
   totalListingsCount: number;
+  memberSince: string;
+  verificationStatus: 'verified' | 'pending' | 'unverified';
+  savedPlaces: SavedPlace[];
+  preferences: UserPreferences;
   isDemoProfile: boolean;
 }

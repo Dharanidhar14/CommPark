@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { Booking, RegisteredVehicle, PaymentMethodType } from '../types/booking';
 import { ParkingSpace } from '../types/parking';
 import { MOCK_ACTIVE_BOOKING, MOCK_RECENT_BOOKINGS } from '../constants/mockData';
+import { useWalletStore } from './useWalletStore';
+import { useNotificationStore } from './useNotificationStore';
 
 export interface DraftBooking {
   space: ParkingSpace | null;
@@ -113,13 +115,61 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       },
     });
 
+    // Synchronize wallet debit if paid via wallet
+    if (newBooking.paymentMethod === 'wallet') {
+      try {
+        useWalletStore.getState().deductFunds(
+          newBooking.totalAmount,
+          `Booking Pass: ${newBooking.space.name}`,
+          newBooking.id
+        );
+      } catch {
+        // ignore
+      }
+    }
+
+    // Dispatch booking confirmed notification
+    try {
+      useNotificationStore.getState().addNotification({
+        title: 'Parking Reservation Confirmed!',
+        body: `Pass for ${newBooking.space.name} is ready. Present QR pass at the gate.`,
+        category: 'booking',
+        relatedRoute: '/booking/pass',
+        relatedId: newBooking.id,
+      });
+    } catch {
+      // ignore
+    }
+
     return newBooking;
   },
   cancelBooking: (id) =>
-    set((state) => ({
-      bookings: state.bookings.map((b) =>
-        b.id === id ? { ...b, status: 'cancelled' as const } : b
-      ),
-      activeBooking: state.activeBooking?.id === id ? null : state.activeBooking,
-    })),
+    set((state) => {
+      const target = state.bookings.find((b) => b.id === id);
+      if (target && target.status === 'active') {
+        try {
+          useWalletStore.getState().creditRefund(
+            target.totalAmount,
+            target.id,
+            `Refund: ${target.space.name}`
+          );
+          useNotificationStore.getState().addNotification({
+            title: 'Booking Refund Processed',
+            body: `₹${target.totalAmount.toFixed(2)} refunded to your CommunityPark Wallet for cancelled reservation #${target.bookingNumber}.`,
+            category: 'payment',
+            relatedRoute: '/(tabs)/wallet',
+            relatedId: target.id,
+          });
+        } catch {
+          // ignore
+        }
+      }
+
+      return {
+        bookings: state.bookings.map((b) =>
+          b.id === id ? { ...b, status: 'cancelled' as const } : b
+        ),
+        activeBooking: state.activeBooking?.id === id ? null : state.activeBooking,
+      };
+    }),
 }));

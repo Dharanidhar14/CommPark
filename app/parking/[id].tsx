@@ -12,6 +12,7 @@ import { useTheme } from '../../src/theme';
 import { getParkingSpaceById } from '../../src/features/discovery';
 import { useBookingStore } from '../../src/store/useBookingStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
+import { useReviewStore } from '../../src/store/useReviewStore';
 import { AppHeader } from '../../src/components/ui/AppHeader';
 import { AppText } from '../../src/components/ui/AppText';
 import { AppIcon } from '../../src/components/ui/AppIcon';
@@ -34,6 +35,8 @@ export default function ParkingDetailsScreen() {
   const setDraftSpace = useBookingStore((s) => s.setDraftSpace);
   const setDraftVehicle = useBookingStore((s) => s.setDraftVehicle);
   const vehicles = useAuthStore((s) => s.vehicles);
+  const getReviewsForSpace = useReviewStore((s) => s.getReviewsForSpace);
+  const spaceReviews = space ? getReviewsForSpace(space.id) : [];
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -357,6 +360,77 @@ export default function ParkingDetailsScreen() {
                 </View>
               ))}
             </View>
+          </View>
+
+          {/* Customer Reviews Section */}
+          <View style={{ marginTop: spacing.xl }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <AppText variant="h3">Neighbourhood Reviews</AppText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <AppIcon name="star" size={16} color="#EAB308" />
+                <AppText variant="bodyBold">{space.rating.toFixed(1)}</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText}>
+                  ({spaceReviews.length} feedback)
+                </AppText>
+              </View>
+            </View>
+
+            {spaceReviews.length === 0 ? (
+              <AppCard style={{ marginTop: spacing.sm, padding: spacing.md, alignItems: 'center' }}>
+                <AppIcon name="chatbox-outline" size={32} color={colors.secondaryText} />
+                <AppText variant="caption" color={colors.secondaryText} style={{ marginTop: 6, textAlign: 'center' }}>
+                  No customer reviews yet. Book this spot and share the first review!
+                </AppText>
+              </AppCard>
+            ) : (
+              <View style={{ marginTop: spacing.sm, gap: 10 }}>
+                {spaceReviews.map((rev) => (
+                  <AppCard key={rev.id} style={{ padding: spacing.md }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            backgroundColor: colors.surfaceSubtle,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <AppText variant="captionSmall" weight="bold">
+                            {rev.userName.charAt(0)}
+                          </AppText>
+                        </View>
+                        <View style={{ marginLeft: 10 }}>
+                          <AppText variant="caption" weight="bold">
+                            {rev.userName}
+                          </AppText>
+                          <AppText variant="captionSmall" color={colors.secondaryText}>
+                            {rev.createdAt}
+                          </AppText>
+                        </View>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', gap: 2 }}>
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <AppIcon
+                            key={s}
+                            name={s <= rev.overallRating ? 'star' : 'star-outline'}
+                            size={14}
+                            color={s <= rev.overallRating ? '#EAB308' : colors.secondaryText}
+                          />
+                        ))}
+                      </View>
+                    </View>
+
+                    <AppText variant="body" color={colors.text} style={{ marginTop: 8 }}>
+                      "{rev.comment}"
+                    </AppText>
+                  </AppCard>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

@@ -23,6 +23,52 @@ export const MOCK_CURRENT_USER: UserProfile = {
   ratingAsOwner: 4.89,
   totalBookingsCount: 18,
   totalListingsCount: 2,
+  memberSince: 'October 2024',
+  verificationStatus: 'verified',
+  savedPlaces: [
+    {
+      id: 'sp_home',
+      label: 'Home',
+      address: 'Flat B-402, Greenwood Palms, 14th Main Rd',
+      locality: 'Indiranagar',
+      city: 'Bengaluru',
+      coordinates: { latitude: 12.9716, longitude: 77.6412 },
+    },
+    {
+      id: 'sp_office',
+      label: 'Office',
+      address: 'RMZ Infinity, Old Madras Road',
+      locality: 'Bennigana Halli',
+      city: 'Bengaluru',
+      coordinates: { latitude: 12.9934, longitude: 77.6608 },
+    },
+    {
+      id: 'sp_gym',
+      label: 'Gym',
+      customName: 'Cult Fit Indiranagar',
+      address: '100 Feet Road, 12th Main Junction',
+      locality: 'Indiranagar',
+      city: 'Bengaluru',
+      coordinates: { latitude: 12.9782, longitude: 77.6435 },
+    },
+  ],
+  preferences: {
+    language: 'English (IN)',
+    preferredVehicleId: 'veh_01',
+    notificationToggles: {
+      bookingConfirmations: true,
+      bookingReminders: true,
+      paymentUpdates: true,
+      listingActivity: true,
+      communityUpdates: true,
+      promotional: false,
+    },
+    privacySettings: {
+      sharePlateWithGuards: true,
+      showProfilePhotoToHosts: true,
+      shareContactWithOwners: false,
+    },
+  },
   isDemoProfile: true,
 };
 

@@ -48,30 +48,44 @@ CommPark/
 │   │   ├── _layout.tsx           # Custom styled tab bar with Electric Lime indicators
 │   │   ├── index.tsx             # 1. Customer Home (hero, locality selector, active pass, monetize banner, nearby spots)
 │   │   ├── explore.tsx           # 2. Explore Map (vector discovery map, floating pins & interactive filter sheet)
-│   │   ├── bookings.tsx          # 3. Bookings list & active pass shortcut
-│   │   ├── wallet.tsx            # 4. Wallet, payouts, and guard incentives in INR (₹)
-│   │   └── profile.tsx           # 5. Profile & 4-role switcher (+ Add vehicle, Links to Owner, Security, Admin)
+│   │   ├── bookings.tsx          # 3. Bookings list, active pass & review launcher
+│   │   ├── wallet.tsx            # 4. Wallet, payouts, top-up modal, and guard incentives in INR (₹)
+│   │   └── profile.tsx           # 5. Profile & 4-role switcher (+ Edit Profile, Vehicles, Places, Privacy, Support)
 │   ├── parking/
-│   │   └── [id].tsx              # 6. Parking details (carousel dots, dimensions, landmarks, security rules)
+│   │   └── [id].tsx              # 6. Parking details (carousel dots, dimensions, landmarks, community reviews)
 │   ├── booking/
 │   │   ├── summary.tsx           # 7. Booking checkout (date, time, duration, vehicle, simulated UPI/Card/Wallet)
 │   │   ├── confirmation.tsx      # 8. Booking confirmation screen (booking ID, reservation summary)
 │   │   └── pass.tsx              # 9. Digital parking pass with demo watermark, dynamic QR, directions
+│   ├── review/
+│   │   └── [bookingId].tsx       # 10. Customer review submission & duplicate prevention
+│   ├── notifications/
+│   │   ├── index.tsx             # 11. Notification centre (filters, unread badge, deep-link actions)
+│   │   └── settings.tsx          # 12. Push notification toggle preferences
+│   ├── profile/
+│   │   ├── vehicles.tsx          # 13. Vehicle fleet management with active reservation protection
+│   │   ├── saved-places.tsx      # 14. Saved places & quick nearby parking search
+│   │   ├── preferences.tsx       # 15. Preferences (default vehicle, languages, appearance)
+│   │   └── privacy.tsx           # 16. Privacy, gate data disclosure & security recommendations
+│   ├── support/
+│   │   ├── index.tsx             # 17. Help centre with searchable FAQ & 24/7 gate intercom
+│   │   ├── report.tsx            # 18. Issue reporting with booking link & photo evidence
+│   │   └── tickets.tsx           # 19. Support ticket history & official resolutions
 │   ├── owner/
-│   │   ├── index.tsx             # 10. Owner dashboard (metrics, listings with approval states, upcoming reservations)
-│   │   ├── new-listing.tsx       # 11. 5-step guided listing workflow with apartment RWA approval rules
-│   │   ├── earnings.tsx          # 12. Owner earnings breakdown, utilization & simulated IMPS bank transfers
+│   │   ├── index.tsx             # 20. Owner dashboard (metrics, listings with approval states, upcoming reservations)
+│   │   ├── new-listing.tsx       # 21. 5-step guided listing workflow with apartment RWA approval rules
+│   │   ├── earnings.tsx          # 22. Owner earnings breakdown, utilization & simulated IMPS bank transfers
 │   │   └── listing/
-│   │       └── [id].tsx          # 13. Listing management, edit rates, availability toggle & RWA simulator
+│   │       └── [id].tsx          # 23. Listing management, edit rates, availability toggle & RWA simulator
 │   ├── security/
-│   │   ├── index.tsx             # 14. Security personnel dashboard (duty toggle, arrivals queue, parked registry, guard incentives)
-│   │   └── verify.tsx            # 15. QR scanner viewfinder & multi-scenario verification sandbox
+│   │   ├── index.tsx             # 24. Security personnel dashboard (duty toggle, arrivals queue, parked registry, guard incentives)
+│   │   └── verify.tsx            # 25. QR scanner viewfinder & multi-scenario verification sandbox
 │   ├── admin/
-│   │   ├── index.tsx             # 16. Community administration dashboard (property metrics & governance overview)
-│   │   ├── approvals.tsx         # 17. Listing authorization portal (approve/reject resident slot submissions)
-│   │   ├── policies.tsx          # 18. Community parking policies (speed limit, booking window, sharing toggles)
-│   │   ├── staff.tsx             # 19. Security staff roster & gate duty management
-│   │   └── audit.tsx             # 20. Tamper-evident society audit logs with filters & export
+│   │   ├── index.tsx             # 26. Community administration dashboard (property metrics & governance overview)
+│   │   ├── approvals.tsx         # 27. Listing authorization portal (approve/reject resident slot submissions)
+│   │   ├── policies.tsx          # 28. Community parking policies (speed limit, booking window, sharing toggles)
+│   │   ├── staff.tsx             # 29. Security staff roster & gate duty management
+│   │   └── audit.tsx             # 30. Tamper-evident society audit logs with filters & export
 │   └── +not-found.tsx            # 404 handler
 ├── src/
 │   ├── theme/                    # Centralised design tokens & hook
@@ -93,7 +107,7 @@ CommPark/
 │   │   │   ├── types.ts          # Map interfaces (IMapProvider, MapCoordinate, MapMarkerItem)
 │   │   │   ├── SimulatedMap.tsx  # Vector canvas map with lime user pin & price tags in INR
 │   │   │   └── MapView.tsx       # Unified CommunityMapView wrapper
-│   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore, useOwnerStore, useSecurityStore, useAdminStore)
+│   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore, useOwnerStore, useSecurityStore, useAdminStore, useWalletStore, useNotificationStore, useReviewStore, useSupportStore)
 │   ├── types/                    # Domain models (ParkingSpace, Booking, User, AccessType, Security, Admin, etc.)
 │   ├── constants/
 │   │   └── mockData.ts           # Single source of truth mock database localized in INR

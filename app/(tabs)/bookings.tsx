@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/theme';
 import { useBookingStore } from '../../src/store/useBookingStore';
+import { useReviewStore } from '../../src/store/useReviewStore';
 import { BookingStatus } from '../../src/types/booking';
 import { AppHeader } from '../../src/components/ui/AppHeader';
 import { AppText } from '../../src/components/ui/AppText';
@@ -26,6 +27,7 @@ export default function BookingsScreen() {
   const { colors, spacing, radius } = useTheme();
 
   const { activeBooking, bookings } = useBookingStore();
+  const hasReviewedBooking = useReviewStore((s) => s.hasReviewedBooking);
   const [selectedTab, setSelectedTab] = useState<'all' | 'active' | 'completed'>('all');
 
   const filteredBookings = bookings.filter((b) => {
@@ -161,14 +163,26 @@ export default function BookingsScreen() {
                     </AppText>
                   </View>
 
-                  <AppButton
-                    title="View Pass & QR"
-                    onPress={() => router.push({ pathname: '/booking/pass', params: { id: booking.id } } as any)}
-                    variant="secondary"
-                    size="sm"
-                    fullWidth={false}
-                    rightIcon={<AppIcon name="chevron-forward" size={14} color={colors.text} />}
-                  />
+                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                    {booking.status === 'completed' && (
+                      <AppButton
+                        title={hasReviewedBooking(booking.id) ? 'View Review' : '⭐ Rate'}
+                        onPress={() => router.push(`/review/${booking.id}` as any)}
+                        variant={hasReviewedBooking(booking.id) ? 'outline' : 'primary'}
+                        size="sm"
+                        fullWidth={false}
+                      />
+                    )}
+
+                    <AppButton
+                      title="View Pass"
+                      onPress={() => router.push({ pathname: '/booking/pass', params: { id: booking.id } } as any)}
+                      variant="secondary"
+                      size="sm"
+                      fullWidth={false}
+                      rightIcon={<AppIcon name="chevron-forward" size={14} color={colors.text} />}
+                    />
+                  </View>
                 </View>
               </AppCard>
             ))}

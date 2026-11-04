@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,15 +16,40 @@ import { AppText } from '../../src/components/ui/AppText';
 import { AppIcon, IconName } from '../../src/components/ui/AppIcon';
 import { AppCard } from '../../src/components/ui/AppCard';
 import { AppBadge } from '../../src/components/ui/AppBadge';
-import { AddVehicleModal } from '../../src/components/booking/AddVehicleModal';
+import { AppButton } from '../../src/components/ui/AppButton';
+import { AppInput } from '../../src/components/ui/AppInput';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { colors, spacing, radius, mode, setMode, isDark } = useTheme();
 
-  const { user, switchRole, vehicles, addVehicle } = useAuthStore();
-  const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
+  const { user, switchRole, vehicles, updateProfile } = useAuthStore();
+
+  // Edit Profile Modal
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editName, setEditName] = useState(user.name);
+  const [editEmail, setEditEmail] = useState(user.email);
+  const [editPhone, setEditPhone] = useState(user.phone);
+  const [editCity, setEditCity] = useState(user.city);
+
+  const openEditProfile = () => {
+    setEditName(user.name);
+    setEditEmail(user.email);
+    setEditPhone(user.phone);
+    setEditCity(user.city);
+    setIsEditProfileOpen(true);
+  };
+
+  const saveProfile = () => {
+    updateProfile({
+      name: editName.trim() || user.name,
+      email: editEmail.trim() || user.email,
+      phone: editPhone.trim() || user.phone,
+      city: editCity.trim() || user.city,
+    });
+    setIsEditProfileOpen(false);
+  };
 
   const handleRoleChange = (role: UserRole) => {
     switchRole(role);
@@ -65,7 +91,19 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <AppHeader title="Account & Roles" subtitle="Manage profile and access modes" />
+      <AppHeader
+        title="Account & Profile"
+        subtitle="Manage settings, vehicles & roles"
+        rightAction={
+          <Pressable
+            onPress={() => router.push('/notifications' as any)}
+            hitSlop={8}
+            style={styles.notifHeaderBtn}
+          >
+            <AppIcon name="notifications-outline" size={22} color={colors.text} />
+          </Pressable>
+        }
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -78,7 +116,7 @@ export default function ProfileScreen() {
         ]}
       >
         {/* User Profile Card */}
-        <AppCard style={{ marginTop: spacing.sm }}>
+        <AppCard style={{ marginTop: spacing.sm, padding: spacing.md }}>
           <View style={styles.profileHeader}>
             <View
               style={[
@@ -92,19 +130,212 @@ export default function ProfileScreen() {
             </View>
 
             <View style={{ flex: 1, marginLeft: 16 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                 <AppText variant="h3">{user.name}</AppText>
-                <AppBadge label="Verified" variant="primary" size="sm" style={{ marginLeft: 8 }} />
+                <AppBadge label="RWA VERIFIED" variant="primary" size="sm" />
               </View>
-              <AppText variant="caption" color={colors.secondaryText} style={{ marginTop: 2 }}>
-                {user.email}
+              <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                {user.email} • {user.phone}
               </AppText>
               <AppText variant="captionSmall" color={colors.secondaryText}>
                 {user.communityName}
               </AppText>
+              <AppText variant="captionSmall" color={colors.primary} weight="semiBold" style={{ marginTop: 2 }}>
+                Member since {user.memberSince}
+              </AppText>
             </View>
           </View>
+
+          <View style={[styles.profileCardFooter, { borderTopColor: colors.border, borderTopWidth: 1, marginTop: 12, paddingTop: 10 }]}>
+            <AppButton
+              title="Edit Profile Details"
+              variant="outline"
+              size="sm"
+              onPress={openEditProfile}
+              leftIcon={<AppIcon name="create-outline" size={16} color={colors.text} />}
+            />
+          </View>
         </AppCard>
+
+        {/* Account Management Modules */}
+        <View style={{ marginTop: spacing.xl }}>
+          <AppText variant="h3">Account Management</AppText>
+          <View style={{ marginTop: spacing.sm, gap: 10 }}>
+            {/* 1. Vehicle Management */}
+            <Pressable
+              onPress={() => router.push('/profile/vehicles' as any)}
+              style={({ pressed }) => [
+                styles.navCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="car-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <AppText variant="bodyBold">Vehicle Management</AppText>
+                  <AppBadge label={`${vehicles.length} REGISTERED`} variant="default" size="sm" />
+                </View>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Add two-wheelers, sedans, SUVs, EVs & license plates
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            {/* 2. Saved Places */}
+            <Pressable
+              onPress={() => router.push('/profile/saved-places' as any)}
+              style={({ pressed }) => [
+                styles.navCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="location-outline" size={22} color={colors.text} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <AppText variant="bodyBold">Saved Places</AppText>
+                  <AppBadge label={`${user.savedPlaces.length} PLACES`} variant="default" size="sm" />
+                </View>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Home, Office, Gym & frequent parking destinations
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            {/* 3. Account Preferences */}
+            <Pressable
+              onPress={() => router.push('/profile/preferences' as any)}
+              style={({ pressed }) => [
+                styles.navCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="settings-outline" size={22} color={colors.text} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Preferences & Notifications</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Default vehicle, push alerts, languages & appearance
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            {/* 4. Privacy & Gate Policy */}
+            <Pressable
+              onPress={() => router.push('/profile/privacy' as any)}
+              style={({ pressed }) => [
+                styles.navCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="shield-checkmark-outline" size={22} color={colors.text} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Privacy & Society Gate Governance</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Plate sharing rules, RWA data policies & security advice
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Support & Help Center */}
+        <View style={{ marginTop: spacing.xl }}>
+          <AppText variant="h3">Help & Support</AppText>
+          <View style={{ marginTop: spacing.sm, gap: 10 }}>
+            {/* 1. Help Centre & FAQ */}
+            <Pressable
+              onPress={() => router.push('/support' as any)}
+              style={({ pressed }) => [
+                styles.navCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="help-circle-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Community Help Centre & FAQs</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Booking guides, gate scanner instructions & refunds
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            {/* 2. My Support Tickets */}
+            <Pressable
+              onPress={() => router.push('/support/tickets' as any)}
+              style={({ pressed }) => [
+                styles.navCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="chatbubble-ellipses-outline" size={22} color={colors.text} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Reported Issues & Tickets</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Track support ticket status & resolutions
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+          </View>
+        </View>
 
         {/* Unified Experience Multi-Role Switcher */}
         <View style={{ marginTop: spacing.xl }}>
@@ -224,56 +455,14 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Registered Vehicles Summary */}
+        {/* Information & Portals Links */}
         <View style={{ marginTop: spacing.xl }}>
-          <View style={styles.sectionHeader}>
-            <AppText variant="h3">Registered Vehicles</AppText>
-            <Pressable onPress={() => setIsAddVehicleOpen(true)} hitSlop={8}>
-              <AppText variant="caption" weight="bold" color={isDark ? colors.primary : '#49570B'}>
-                + Add Vehicle
-              </AppText>
-            </Pressable>
-          </View>
-
-          <View style={{ marginTop: spacing.sm }}>
-            {vehicles.map((veh) => (
-              <AppCard key={veh.id} style={{ marginBottom: 10, padding: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View
-                    style={[
-                      styles.vehIconCircle,
-                      { backgroundColor: colors.surfaceSubtle },
-                    ]}
-                  >
-                    <AppIcon name="car" size={20} color={colors.text} />
-                  </View>
-
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <AppText variant="bodyBold">
-                      {veh.make} {veh.model}
-                    </AppText>
-                    <AppText variant="captionSmall" color={colors.secondaryText}>
-                      Plate: {veh.licensePlate} • {veh.color}
-                    </AppText>
-                  </View>
-
-                  {veh.isDefault && (
-                    <AppBadge label="DEFAULT" variant="default" size="sm" />
-                  )}
-                </View>
-              </AppCard>
-            ))}
-          </View>
-        </View>
-
-        {/* About CommunityPark & Quick Links */}
-        <View style={{ marginTop: spacing.xl }}>
-          <AppText variant="h3">Information & Resources</AppText>
+          <AppText variant="h3">Community & Portals</AppText>
           <View style={{ marginTop: spacing.sm, gap: 10 }}>
             <Pressable
               onPress={() => router.push('/owner' as any)}
               style={({ pressed }) => [
-                styles.linkCard,
+                styles.navCard,
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
@@ -284,7 +473,7 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
                 <AppIcon name="business-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -299,7 +488,7 @@ export default function ProfileScreen() {
             <Pressable
               onPress={() => router.push('/security' as any)}
               style={({ pressed }) => [
-                styles.linkCard,
+                styles.navCard,
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
@@ -310,7 +499,7 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
                 <AppIcon name="shield-checkmark-outline" size={22} color={colors.text} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -325,7 +514,7 @@ export default function ProfileScreen() {
             <Pressable
               onPress={() => router.push('/admin' as any)}
               style={({ pressed }) => [
-                styles.linkCard,
+                styles.navCard,
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
@@ -336,7 +525,7 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
                 <AppIcon name="shield-half-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -351,7 +540,7 @@ export default function ProfileScreen() {
             <Pressable
               onPress={() => router.push('/about' as any)}
               style={({ pressed }) => [
-                styles.linkCard,
+                styles.navCard,
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
@@ -362,7 +551,7 @@ export default function ProfileScreen() {
                 },
               ]}
             >
-              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+              <View style={[styles.navIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
                 <AppIcon name="information-circle-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -377,14 +566,73 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* Add Vehicle Modal */}
-      <AddVehicleModal
-        visible={isAddVehicleOpen}
-        onClose={() => setIsAddVehicleOpen(false)}
-        onVehicleAdded={(veh) => {
-          addVehicle(veh);
-        }}
-      />
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={isEditProfileOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsEditProfileOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalSheet,
+              {
+                backgroundColor: colors.surface,
+                borderTopLeftRadius: radius.xl,
+                borderTopRightRadius: radius.xl,
+                paddingBottom: insets.bottom + 20,
+              },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <AppText variant="h3">Edit Profile Details</AppText>
+              <Pressable onPress={() => setIsEditProfileOpen(false)} hitSlop={12}>
+                <AppIcon name="close" size={24} color={colors.secondaryText} />
+              </Pressable>
+            </View>
+
+            <View style={{ gap: 12, marginTop: 12 }}>
+              <AppInput
+                label="Full Name"
+                placeholder="Your Full Name"
+                value={editName}
+                onChangeText={setEditName}
+              />
+              <AppInput
+                label="Email Address"
+                placeholder="you@example.com"
+                value={editEmail}
+                onChangeText={setEditEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <AppInput
+                label="Mobile Number"
+                placeholder="+91 98450 00000"
+                value={editPhone}
+                onChangeText={setEditPhone}
+                keyboardType="phone-pad"
+              />
+              <AppInput
+                label="Primary City"
+                placeholder="Bengaluru, Mumbai"
+                value={editCity}
+                onChangeText={setEditCity}
+              />
+            </View>
+
+            <View style={{ marginTop: 20 }}>
+              <AppButton
+                title="Save Profile"
+                variant="primary"
+                size="lg"
+                onPress={saveProfile}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -406,10 +654,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  profileCardFooter: {},
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  navCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  navIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   roleCard: {
     flexDirection: 'row',
@@ -432,22 +692,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vehIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
+  notifHeaderBtn: {
+    padding: 6,
   },
-  linkCard: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    padding: 20,
+  },
+  modalHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  linkIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 8,
   },
 });

@@ -9,7 +9,7 @@
 - Language: TypeScript
 - Navigation: Expo Router
 - Development environment: Google Antigravity
-- Current development stage: Milestone 4: Security Personnel and Community Administration Completed
+- Current development stage: Milestone 5: User Account, Wallet, Notifications, Reviews & Support Completed
 
 ## 2. Product vision
 CommunityPark is a community-driven parking marketplace that allows people to discover and book available parking spaces while enabling property owners and residents to monetize unused parking spaces.
@@ -51,7 +51,7 @@ One application and one user account supporting:
 - Expo managed workflow (SDK 58)
 - TypeScript (strict mode, version ~6.0.3)
 - Expo Router v4
-- Zustand for client-side state (`useThemeStore`, `useAuthStore`, `useBookingStore`, `useOwnerStore`, `useSecurityStore`, `useAdminStore`)
+- Zustand for client-side state (`useThemeStore`, `useAuthStore`, `useBookingStore`, `useOwnerStore`, `useSecurityStore`, `useAdminStore`, `useWalletStore`, `useNotificationStore`, `useReviewStore`, `useSupportStore`)
 - TanStack Query for server state
 - React Hook Form + Zod for form validations
 - Expo SecureStore
@@ -80,7 +80,10 @@ One application and one user account supporting:
 
 ## 10. Navigation architecture
 - Bottom tabs: Home, Explore, Bookings, Wallet, Profile.
-- Customer routes: `/parking/[id]`, `/booking/summary`, `/booking/confirmation`, `/booking/pass`, `/about`.
+- Customer routes: `/parking/[id]`, `/booking/summary`, `/booking/confirmation`, `/booking/pass`, `/about`, `/review/[bookingId]`.
+- Profile routes: `/profile/vehicles`, `/profile/saved-places`, `/profile/preferences`, `/profile/privacy`.
+- Notifications routes: `/notifications`, `/notifications/settings`.
+- Support routes: `/support`, `/support/report`, `/support/tickets`.
 - Owner routes: `/owner`, `/owner/new-listing`, `/owner/earnings`, `/owner/listing/[id]`.
 - Security routes: `/security`, `/security/verify`.
 - Admin routes: `/admin`, `/admin/approvals`, `/admin/policies`, `/admin/staff`, `/admin/audit`.

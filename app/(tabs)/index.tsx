@@ -50,10 +50,7 @@ export default function HomeScreen() {
   const commercialSpaces = spaces.filter((s) => s.category === 'commercial');
 
   const handleNotificationPress = () => {
-    Alert.alert(
-      'Community Notifications',
-      '• Gate 2 verification active for your Nexon EV.\n• Indiranagar parking demand is high this evening.\n• Guard incentive balance: ₹750.00 earned.'
-    );
+    router.push('/notifications' as any);
   };
 
   return (

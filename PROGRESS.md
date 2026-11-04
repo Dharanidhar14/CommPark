@@ -122,6 +122,42 @@
 ---
 
 ## Upcoming Milestones
-- [ ] **Milestone 5: Profile, Wallet and Push Notifications Enhancements**
+- [x] **Milestone 5: User Account, Wallet, Notifications, Reviews & Support (Task 05 - Completed)**
+  - [x] **Profile & Account Management**:
+    - [x] Enhanced `app/(tabs)/profile.tsx` with profile avatar, verification badge, member since, email, phone, and in-place Edit Profile modal.
+    - [x] Dedicated Vehicle Management (`app/profile/vehicles.tsx`): 5 vehicle types (Two-wheeler, Hatchback, Sedan, SUV, EV), Indian license plate badge, add/edit, default vehicle selection, and active-reservation deletion safeguard.
+    - [x] Saved Places (`app/profile/saved-places.tsx`): Home, Office, College, Gym, and custom locations with quick nearby parking discovery.
+    - [x] Account Preferences (`app/profile/preferences.tsx`): Default vehicle selector, light/dark/system appearance, push notification toggles, and language preference placeholder.
+    - [x] Privacy & Society Gate Governance (`app/profile/privacy.tsx`): Disclosure of vehicle plate sharing for boom barriers, host avatar controls, speed limit guidelines, and simulated account data export.
+  - [x] **Enhanced Wallet Experience**:
+    - [x] Dedicated Wallet Store (`src/store/useWalletStore.ts`) & Types (`src/types/wallet.ts`).
+    - [x] `app/(tabs)/wallet.tsx`: Available balance in INR (`₹`), separated lifetime host earnings and guard incentives counters, pending credits, total credits and debits.
+    - [x] Simulated "Add Money" modal with preset chips (₹200, ₹500, ₹1000, ₹2000) and UPI app picker (Google Pay, PhonePe, Paytm, BHIM).
+    - [x] Simulated IMPS withdrawal dialog.
+    - [x] Category filters (All, Parking Passes, Refunds, Host Earnings, Guard Rewards, Wallet Loads) and detailed transaction modal with reference IDs and notes.
+    - [x] Financial consistency: Booking checkout debits wallet; booking cancellation credits refunds with automated transaction logging.
+  - [x] **Notifications Centre**:
+    - [x] Dedicated Notification Store (`src/store/useNotificationStore.ts`) & Types (`src/types/notification.ts`).
+    - [x] `app/notifications/index.tsx`: Category filter pills (Passes, Wallet, Reminders, Approvals, Security, Host), unread badges, mark all read, dismiss notification, and deep-link routing.
+    - [x] Header notification bell in `AppHeader` and Home screen.
+    - [x] Notification Settings (`app/notifications/settings.tsx`).
+  - [x] **Reviews & Ratings**:
+    - [x] Dedicated Review Store (`src/store/useReviewStore.ts`) & Types (`src/types/review.ts`).
+    - [x] Customer Review Screen (`app/review/[bookingId].tsx`): 4 rating criteria (Overall, Bay Quality, Access & Security, Cleanliness), multiline feedback, and duplicate review prevention.
+    - [x] Completed bookings in `app/(tabs)/bookings.tsx` feature dynamic "⭐ Rate" / "View Review" buttons.
+    - [x] Dynamic neighbourhood reviews rendered in parking details (`app/parking/[id].tsx`).
+  - [x] **Help, Support & Issue Reporting**:
+    - [x] Dedicated Support Store (`src/store/useSupportStore.ts`) & Types (`src/types/support.ts`).
+    - [x] Help Centre (`app/support/index.tsx`): Searchable FAQ accordion across 6 topics, plus 24/7 Gate 2 emergency security intercom shortcut.
+    - [x] Report an Issue (`app/support/report.tsx`): 8 issue categories, related booking selector, description, optional photo evidence attachment simulation, and ticket generation (`TKT-2026-IND-XXXX`).
+    - [x] Support Ticket History (`app/support/tickets.tsx`): Status badges (`SUBMITTED`, `UNDER REVIEW`, `RESOLVED`), user report view, and support team resolution response.
+  - [x] **Diagnostics & Validation**:
+    - [x] TypeScript compiler: `npm run ts:check` (0 errors).
+    - [x] Expo Doctor: `npx expo-doctor` (20/20 checks passed).
+    - [x] Static Web Export: `npx expo export -p web` (38/38 routes bundled cleanly).
+
+---
+
+## Upcoming Milestones
 - [ ] **Milestone 6: Real Backend & Authentication Integration**
 - [ ] **Milestone 7: End-to-End Testing & Production Release**
