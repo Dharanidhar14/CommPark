@@ -53,11 +53,56 @@
     - [x] Expo bundling & static route export: `npx expo export -p web` (17/17 routes bundled cleanly)
     - [x] Metro bundler development server: tested and confirmed `200 OK` on `localhost:8081`
 
+- [x] **Milestone 2 / Task 02: Customer Discovery & Booking Experience (Completed)**
+  - [x] **Indian Market Localization & Mock Dataset**:
+    - [x] Currency standardized to Indian Rupee (`₹`) across all screens, cards, maps, summary, pass, wallet, and security scanner.
+    - [x] Realistic localities in Bengaluru (Indiranagar, Koramangala, Whitefield, HSR Layout, MG Road) and Mumbai (Bandra West).
+    - [x] Indian vehicle registration format (`KA 01 MJ 4821`, `MH 02 BP 9920`).
+    - [x] Prominent demo watermark & `isDemoData: true` flags on passes, cards, and booking transactions.
+  - [x] **Desktop Responsive Web Layout**:
+    - [x] Centered mobile frame container (`maxWidth: 480`) on desktop web viewports in `app/_layout.tsx`.
+    - [x] Clean dark border, box shadow, and full-height mobile viewport behavior.
+  - [x] **Customer Discovery & Search Experience**:
+    - [x] `LocationSelectorModal` supporting instant switching between Bengaluru and Mumbai hubs.
+    - [x] `ParkingSearchBar` with recent search chips, real-time query suggestions, and category filters.
+    - [x] Dynamic filter pills and active pass reminder banner with demo badge.
+  - [x] **Explore Screen & Interactive Filter System**:
+    - [x] Interactive `SimulatedMap` with INR pricing markers, pan/zoom canvas, and "Search This Area" feature.
+    - [x] `FilterBottomSheet` supporting price range slider (₹20 – ₹100/hr), distance radius (1km – 10km), amenity toggles (EV charging, covered, CCTV, 24/7 access), and sorting (Price: Low to High, Distance, Rating).
+    - [x] Dynamic active filter badge count and reset functionality.
+  - [x] **Parking Space Details Screen (`app/parking/[id].tsx`)**:
+    - [x] Multi-image photo gallery carousel with active page indicator dots.
+    - [x] Space dimensions (length, width, clearance height).
+    - [x] Operating hours, nearby landmarks (metro stations, commercial hubs).
+    - [x] Community security procedures and host/owner association details.
+  - [x] **End-to-End Customer Booking Journey**:
+    - [x] Booking date picker (Today, Tomorrow, In 2 Days).
+    - [x] Start time picker (Immediate / Now, 10:00 AM, 01:00 PM, 04:30 PM, 07:00 PM).
+    - [x] Parking duration chips (1h, 2h, 4h, 8h, Full Day).
+    - [x] Registered vehicle selection + `AddVehicleModal` (with React Hook Form & Zod validation).
+    - [x] Simulated Indian payment selector: UPI (Google Pay, PhonePe, Paytm, BHIM), Debit/Credit Cards (RuPay/Visa/MasterCard), CommunityPark Wallet (₹1,250.00).
+    - [x] Toggleable "Simulate Payment Failure" switch for error recovery testing.
+    - [x] Transparent INR breakdown (Hourly rate × duration + ₹15 Platform & Security Fee = Total).
+    - [x] Simulated payment execution with animated state transition.
+  - [x] **Booking Confirmation Screen (`app/booking/confirmation.tsx`)**:
+    - [x] Dedicated confirmation screen with success animation, booking ID (`CP-2026-IND-XXXX`), reserved slot, vehicle plate, access summary, and CTAs.
+  - [x] **Digital Parking Pass Screen (`app/booking/pass.tsx`)**:
+    - [x] Prominent **"DEMO / SAMPLE PASS — NOT ACCEPTED AS REAL SECURITY AUTHORISATION"** watermark banner.
+    - [x] High-contrast dynamic QR code.
+    - [x] Interactive simulated Turn-by-Turn Directions modal with distance, ETA, and turn cues.
+    - [x] Direct navigation link to Guard Verification Scanner (`/security/verify`).
+  - [x] **About CommunityPark Screen (`app/about.tsx`)**:
+    - [x] Comprehensive brand, problem, solution, 4-step workflow, differentiators, mission, responsible community guidelines, and version details.
+    - [x] Accessible from Profile screen under "Information & Resources".
+  - [x] **Diagnostics & Validation**:
+    - [x] TypeScript validation: `npm run ts:check` (0 errors, strict mode).
+    - [x] Expo Doctor: `npx expo-doctor` (20/20 checks passed).
+    - [x] Expo Web Export: `npx expo export -p web` (19/19 routes bundled successfully).
+
 ---
 
 ## Upcoming Milestones
-- [ ] **Milestone 2: Customer Home and Discovery**
-- [ ] **Milestone 3: Parking Details and Booking Interface**
+- [ ] **Milestone 3: Parking Details and Booking Interface Enhancements**
 - [ ] **Milestone 4: Owner Listing and Dashboard**
 - [ ] **Milestone 5: Security and Community Administration**
 - [ ] **Milestone 6: Profile, Wallet and Notifications**

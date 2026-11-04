@@ -9,6 +9,8 @@
 - **Light Theme:** Background `#F7F8F5` | Surface `#FFFFFF` | Text `#171A18`
 - **Dark Theme:** Background `#171A18` | Surface `#242925` | Text `#F4F6F1`
 - **Typography:** Manrope (`@expo-google-fonts/manrope`)
+- **Localization:** Indian Market Standard — Indian Rupee (`₹`), localities in Bengaluru and Mumbai, Indian vehicle registration plates (`KA 01 MJ 4821`), and demo UPI payment simulation.
+- **Desktop Web Support:** Centered mobile viewport container (`maxWidth: 480`) to ensure a native smartphone look and feel on desktop browsers.
 - **Map Philosophy:** Provider-independent vector discovery abstraction (seamlessly swappable for Google Maps or Mapbox).
 
 ---
@@ -39,24 +41,26 @@ CommunityPark adapts access workflows based on the location:
 ```text
 CommPark/
 ├── app/                          # Expo Router routes
-│   ├── _layout.tsx               # Root layout: ThemeProvider, QueryClient, Font loading
+│   ├── _layout.tsx               # Root layout: ThemeProvider, QueryClient, Font loading, Web responsive wrapper
 │   ├── index.tsx                 # Root redirect to main tabs
+│   ├── about.tsx                 # About CommunityPark (Mission, values, 4 access types, responsible parking)
 │   ├── (tabs)/                   # 5 primary bottom navigation tabs
 │   │   ├── _layout.tsx           # Custom styled tab bar with Electric Lime indicators
-│   │   ├── index.tsx             # 1. Customer Home (hero, active pass, nearby spots)
-│   │   ├── explore.tsx           # 2. Explore Map (vector discovery map & floating pins)
+│   │   ├── index.tsx             # 1. Customer Home (hero, locality selector, active pass, nearby spots)
+│   │   ├── explore.tsx           # 2. Explore Map (vector discovery map, floating pins & interactive filter sheet)
 │   │   ├── bookings.tsx          # 3. Bookings list & active pass shortcut
 │   │   ├── wallet.tsx            # 4. Wallet, payouts, and guard incentives
-│   │   └── profile.tsx           # 5. Profile & multi-role switcher
+│   │   └── profile.tsx           # 5. Profile & multi-role switcher (+ Add vehicle & About links)
 │   ├── parking/
-│   │   └── [id].tsx              # 6. Parking details (access badge, amenities, pricing)
+│   │   └── [id].tsx              # 6. Parking details (carousel dots, dimensions, landmarks, security rules)
 │   ├── booking/
-│   │   ├── summary.tsx           # 7. Booking checkout & vehicle selection
-│   │   └── pass.tsx              # 8. Digital parking pass with simulated QR code
+│   │   ├── summary.tsx           # 7. Booking checkout (date, time, duration, vehicle, simulated UPI/Card/Wallet)
+│   │   ├── confirmation.tsx      # 8. Booking confirmation screen (booking ID, reservation summary)
+│   │   └── pass.tsx              # 9. Digital parking pass with demo watermark, dynamic QR, directions
 │   ├── owner/
-│   │   └── index.tsx             # 9. Owner dashboard (listings & earnings)
+│   │   └── index.tsx             # 10. Owner dashboard (listings & earnings in INR)
 │   ├── security/
-│   │   └── verify.tsx            # 10. Security guard QR scanner & vehicle check
+│   │   └── verify.tsx            # 11. Security guard QR scanner & vehicle check (+₹15 incentive log)
 │   └── +not-found.tsx            # 404 handler
 ├── src/
 │   ├── theme/                    # Centralised design tokens & hook
@@ -69,17 +73,19 @@ CommPark/
 │   │   └── ThemeProvider.tsx     # useTheme() hook supporting Light/Dark/System
 │   ├── components/
 │   │   ├── ui/                   # Reusable UI primitives (AppButton, AppText, AppCard, etc.)
-│   │   ├── parking/              # Parking domain components (ParkingCard, Price, AccessPill, etc.)
+│   │   ├── parking/              # Parking domain components (ParkingCard, Price, AccessPill, FilterBottomSheet, etc.)
+│   │   ├── booking/              # Booking components (AddVehicleModal with RHF & Zod validation)
+│   │   ├── home/                 # Home components (LocationSelectorModal)
 │   │   └── common/               # Cross-cutting components (ActivePassBanner)
 │   ├── services/
 │   │   └── maps/                 # Provider-independent Map Abstraction
-│   │       ├── types.ts          # Map interfaces (IMapProvider, MapCoordinate, MapMarkerItem)
-│   │       ├── SimulatedMap.tsx  # Vector canvas map with lime user pin & price tags
-│   │       └── MapView.tsx       # Unified CommunityMapView wrapper
+│   │   │   ├── types.ts          # Map interfaces (IMapProvider, MapCoordinate, MapMarkerItem)
+│   │   │   ├── SimulatedMap.tsx  # Vector canvas map with lime user pin & price tags in INR
+│   │   │   └── MapView.tsx       # Unified CommunityMapView wrapper
 │   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore)
 │   ├── types/                    # Domain models (ParkingSpace, Booking, User, AccessType)
 │   ├── constants/
-│   │   └── mockData.ts           # Single source of truth mock database
+│   │   └── mockData.ts           # Single source of truth mock database localized in INR
 │   └── features/
 │       └── discovery/            # Parking search & filtering logic
 ├── assets/                       # App icons, splash screens, favicons
@@ -100,37 +106,20 @@ CommPark/
 # Start development server
 npm start
 
-# Run with Web bundler
+# Run on web
 npm run web
 
-# Run on Android (requires Android device with Expo Go or Android emulator)
-npm run android
-
-# Run on iOS (requires macOS with Xcode or iOS device with Expo Go)
-npm run ios
-```
-
-### TypeScript Validation
-```bash
-# Check TypeScript types strictly with zero emit
+# Check TypeScript compiler
 npm run ts:check
-```
 
-### Testing on Physical Devices
-1. Install **Expo Go** from Google Play Store or Apple App Store.
-2. Run `npm start`.
-3. Scan the QR code with the Expo Go camera (Android) or default Camera app (iOS).
+# Run Expo Doctor diagnostic
+npx expo-doctor
+```
 
 ---
 
-## Implemented Screens (Milestone 1 Prototype)
-1. **Customer Home (`/(tabs)`)** — Photography-led hero, current location pill, search bar, dual "Find Parking" / "List Space" actions, active booking banner, and curated parking lists.
-2. **Explore Map (`/(tabs)/explore`)** — Interactive vector map canvas with dark floating price pins (`$4.50/hr`), Electric Lime user location pin, search bar, category chips, and bottom spot preview card.
-3. **Bookings (`/(tabs)/bookings`)** — Active pass countdown card, filter tabs (All, Active, Completed), and pass history.
-4. **Wallet (`/(tabs)/wallet`)** — Total balance card in Electric Lime & dark surface, breakdown of owner earnings & security guard incentives, and recent ledger activity.
-5. **Profile (`/(tabs)/profile`)** — Account details, registered vehicle list, appearance theme selector (Light/Dark/System), and **Unified Multi-Role Switcher** (Customer, Owner, Security Guard).
-6. **Parking Space Details (`/parking/[id]`)** — High-res photography, access type badge, detailed access procedure explanation, security on-site badge, host verification, amenities grid, and floating reservation CTA.
-7. **Booking Summary & Checkout (`/booking/summary`)** — Vehicle selector, duration chips (1h, 2h, 4h, 8h, 24h), cost breakdown with platform fee, and instant simulated confirmation.
-8. **Digital Parking Pass (`/booking/pass`)** — Live simulated QR code pass, license plate match verification, gate passcode, directions button, and guard scan simulation.
-9. **Owner Dashboard (`/owner`)** — Space host earnings, active listings toggle (Live / Paused), pricing, and calendar link.
-10. **Security Guard Verification (`/security/verify`)** — On-duty guard scanner with camera viewfinder, simulated QR reader, vehicle plate matching, and automatic guard incentive logging (+$1.50).
+## Key Design Principles
+- **No Random Emojis as UI Icons:** Consistent vector iconography via `@expo/vector-icons` Ionicons.
+- **Provider-Independent Mapping:** Vector map rendering runs without external API keys or native binaries, fully tested on Web, iOS and Android.
+- **Explicit Mock & Demo Identification:** All simulated parking passes, vehicle checks, and payment transactions carry prominent DEMO visual badges to prevent confusion with real-world security credentials.
+- **Single Source of Truth:** Centralized mock database in `src/constants/mockData.ts` drives all customer, owner, and security views consistently.
