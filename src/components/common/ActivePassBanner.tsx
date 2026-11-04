@@ -43,8 +43,13 @@ export const ActivePassBanner: React.FC<ActivePassBannerProps> = ({
         <View style={styles.statusIndicator}>
           <View style={[styles.pulseDot, { backgroundColor: colors.primary }]} />
           <AppText variant="captionSmall" weight="bold" color={colors.primary}>
-            ACTIVE PARKING PASS
+            ACTIVE PASS
           </AppText>
+          <View style={[styles.demoTag, { backgroundColor: 'rgba(217, 245, 66, 0.2)', borderColor: colors.primary }]}>
+            <AppText variant="captionSmall" weight="extraBold" color={colors.primary}>
+              DEMO
+            </AppText>
+          </View>
         </View>
 
         <AccessTypePill accessType={booking.accessType} compact />
@@ -86,6 +91,13 @@ const styles = StyleSheet.create({
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  demoTag: {
+    marginLeft: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   pulseDot: {
     width: 8,

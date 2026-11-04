@@ -4,19 +4,26 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/theme';
 import { useBookingStore } from '../../src/store/useBookingStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
-import { getFilteredParkingSpaces } from '../../src/features/discovery';
+import {
+  getFilteredParkingSpaces,
+  SEARCH_SUGGESTIONS_MOCK,
+  RECENT_SEARCHES_MOCK,
+} from '../../src/features/discovery';
 import { ParkingCategory } from '../../src/types/parking';
 import { AppText } from '../../src/components/ui/AppText';
 import { AppIcon } from '../../src/components/ui/AppIcon';
+import { AppBadge } from '../../src/components/ui/AppBadge';
 import { ParkingSearchBar } from '../../src/components/parking/ParkingSearchBar';
 import { ParkingCard } from '../../src/components/parking/ParkingCard';
 import { ActivePassBanner } from '../../src/components/common/ActivePassBanner';
+import { LocationSelectorModal } from '../../src/components/home/LocationSelectorModal';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -26,16 +33,28 @@ export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
   const activeBooking = useBookingStore((s) => s.activeBooking);
 
+  const [selectedLocality, setSelectedLocality] = useState('Indiranagar');
+  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ParkingCategory | 'all'>('all');
 
   const spaces = getFilteredParkingSpaces({
     query: searchQuery,
     category: selectedCategory,
+    locality: selectedLocality === 'All Localities' ? undefined : selectedLocality,
   });
 
   const securitySpaces = spaces.filter((s) => s.accessType === 'security_verified');
-  const directAndDriveway = spaces.filter((s) => s.accessType !== 'security_verified');
+  const drivewaySpaces = spaces.filter((s) => s.category === 'driveway');
+  const directSpaces = spaces.filter((s) => s.accessType === 'direct_access');
+  const commercialSpaces = spaces.filter((s) => s.category === 'commercial');
+
+  const handleNotificationPress = () => {
+    Alert.alert(
+      'Community Notifications',
+      '• Gate 2 verification active for your Nexon EV.\n• Indiranagar parking demand is high this evening.\n• Guard incentive balance: ₹750.00 earned.'
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -49,51 +68,74 @@ export default function HomeScreen() {
           },
         ]}
       >
-        {/* Top Location & Profile Header */}
+        {/* Top Destination & Notification Header */}
         <View style={[styles.headerRow, { paddingHorizontal: spacing.lg }]}>
-          <View>
+          <Pressable
+            onPress={() => setIsLocationModalVisible(true)}
+            style={({ pressed }) => [styles.locationTouchable, pressed && { opacity: 0.8 }]}
+          >
             <View style={styles.locationPill}>
               <AppIcon name="location" size={14} color={isDark ? colors.primary : '#49570B'} />
               <AppText variant="captionSmall" weight="bold" style={{ marginLeft: 4 }}>
-                CURRENT LOCATION
+                CURRENT HUB
               </AppText>
+              <AppBadge label="INDIA" variant="default" size="sm" style={{ marginLeft: 6 }} />
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-              <AppText variant="h3">Downtown West, Metro City</AppText>
+              <AppText variant="h3">{selectedLocality}, Bengaluru</AppText>
               <AppIcon name="chevron-down" size={16} color={colors.text} style={{ marginLeft: 4 }} />
             </View>
-          </View>
-
-          <Pressable
-            onPress={() => router.push('/(tabs)/profile' as any)}
-            style={[
-              styles.avatarButton,
-              { backgroundColor: colors.surfaceSubtle, borderColor: colors.border },
-            ]}
-          >
-            <AppIcon name="person" size={18} color={colors.text} />
           </Pressable>
+
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Pressable
+              onPress={handleNotificationPress}
+              style={[
+                styles.iconBtn,
+                { backgroundColor: colors.surfaceSubtle, borderColor: colors.border },
+              ]}
+            >
+              <AppIcon name="notifications-outline" size={18} color={colors.text} />
+              <View style={[styles.notifDot, { backgroundColor: colors.primary }]} />
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/(tabs)/profile' as any)}
+              style={[
+                styles.iconBtn,
+                { backgroundColor: colors.surfaceSubtle, borderColor: colors.border },
+              ]}
+            >
+              <AppIcon name="person-outline" size={18} color={colors.text} />
+            </Pressable>
+          </View>
         </View>
 
-        {/* Active Parking Pass (if any) */}
+        {/* Active Parking Pass Hero (Demo) */}
         {activeBooking && (
           <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.md }}>
             <ActivePassBanner booking={activeBooking} />
           </View>
         )}
 
-        {/* Search Bar & Category Chips */}
-        <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.lg }}>
+        {/* Search Bar & Auto-Suggestions */}
+        <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.lg, zIndex: 30 }}>
           <ParkingSearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
+            suggestions={SEARCH_SUGGESTIONS_MOCK}
+            recentSearches={RECENT_SEARCHES_MOCK}
+            onSelectSuggestion={(sug) => {
+              setSearchQuery(sug.query);
+              if (sug.type === 'locality') setSelectedLocality(sug.query);
+            }}
             onFilterPress={() => router.push('/(tabs)/explore' as any)}
           />
         </View>
 
-        {/* Quick Dual Action Banners: "Find Parking" vs "List Your Space" */}
+        {/* Primary Dual Actions: "Find Parking" vs "List Your Space" */}
         <View style={[styles.actionRow, { paddingHorizontal: spacing.lg, marginTop: spacing.lg }]}>
           {/* Find Parking */}
           <Pressable
@@ -115,7 +157,7 @@ export default function HomeScreen() {
               Find Parking
             </AppText>
             <AppText variant="captionSmall" color="rgba(23, 26, 24, 0.75)" style={{ marginTop: 2 }}>
-              Explore map & book spots
+              Explore live map & book
             </AppText>
           </Pressable>
 
@@ -141,18 +183,18 @@ export default function HomeScreen() {
               List Space
             </AppText>
             <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
-              Monetize unused parking
+              Monetize empty driveways
             </AppText>
           </Pressable>
         </View>
 
-        {/* Section 1: Security-Verified Residential Parking */}
+        {/* Section 1: Security-Verified Residential Apartments */}
         <View style={{ marginTop: spacing.xl }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: spacing.lg }]}>
             <View>
               <AppText variant="h3">Security-Verified</AppText>
               <AppText variant="captionSmall" color={colors.secondaryText}>
-                Apartment bays with gated guard verification
+                Apartments with guard QR & vehicle verification
               </AppText>
             </View>
             <Pressable onPress={() => router.push('/(tabs)/explore' as any)}>
@@ -175,24 +217,52 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Section 2: Direct Bays & Driveways */}
+        {/* Section 2: Owner-Assisted Private Bungalow Driveways */}
+        {drivewaySpaces.length > 0 && (
+          <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.lg }}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <AppText variant="h3">Private Bungalow Driveways</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText}>
+                  Owner-assisted parking with dedicated gate guidance
+                </AppText>
+              </View>
+            </View>
+
+            <View style={{ marginTop: spacing.md }}>
+              {drivewaySpaces.map((space) => (
+                <ParkingCard key={space.id} space={space} />
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Section 3: Direct Sensor Bays & Tech Commercial Hubs */}
         <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.lg }}>
           <View style={styles.sectionHeader}>
             <View>
-              <AppText variant="h3">Direct & Driveway Bays</AppText>
+              <AppText variant="h3">Commercial Tech Hubs & Direct Bays</AppText>
               <AppText variant="captionSmall" color={colors.secondaryText}>
-                Instant access without security gates
+                Automated barrier & sensor-monitored slots
               </AppText>
             </View>
           </View>
 
           <View style={{ marginTop: spacing.md }}>
-            {directAndDriveway.map((space) => (
+            {[...directSpaces, ...commercialSpaces].map((space) => (
               <ParkingCard key={space.id} space={space} />
             ))}
           </View>
         </View>
       </ScrollView>
+
+      {/* Destination Selector Modal */}
+      <LocationSelectorModal
+        visible={isLocationModalVisible}
+        onClose={() => setIsLocationModalVisible(false)}
+        selectedLocality={selectedLocality}
+        onSelectLocality={setSelectedLocality}
+      />
     </View>
   );
 }
@@ -210,17 +280,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  locationTouchable: {
+    flex: 1,
+  },
   locationPill: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  notifDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
   actionRow: {
     flexDirection: 'row',
