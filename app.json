@@ -7,12 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "communitypark",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#171A18"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.communitypark.app",
