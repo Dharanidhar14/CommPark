@@ -2,41 +2,41 @@ import { PALETTE } from './colors';
 
 export const lightColors = {
   // Brand
-  primary: PALETTE.electricLime,
-  primaryForeground: PALETTE.pitchDark,
-  primaryHover: PALETTE.electricLimeDark,
+  primary: PALETTE.electricLime as string,
+  primaryForeground: PALETTE.pitchDark as string,
+  primaryHover: PALETTE.electricLimeDark as string,
 
   // Layout & Backgrounds
-  background: PALETTE.offWhite,
-  surface: PALETTE.pureWhite,
-  surfaceSubtle: PALETTE.subtleLight,
-  card: PALETTE.cardLight,
-  cardBorder: PALETTE.borderLight,
+  background: PALETTE.offWhite as string,
+  surface: PALETTE.pureWhite as string,
+  surfaceSubtle: PALETTE.subtleLight as string,
+  card: PALETTE.cardLight as string,
+  cardBorder: PALETTE.borderLight as string,
 
   // Typography
-  text: PALETTE.textLightPrimary,
-  secondaryText: PALETTE.textLightSecondary,
-  mutedText: PALETTE.textLightMuted,
-  inverseText: PALETTE.pureWhite,
+  text: PALETTE.textLightPrimary as string,
+  secondaryText: PALETTE.textLightSecondary as string,
+  mutedText: PALETTE.textLightMuted as string,
+  inverseText: PALETTE.pureWhite as string,
 
   // Borders & Dividers
-  border: PALETTE.borderLight,
-  borderSubtle: PALETTE.borderSubtleLight,
+  border: PALETTE.borderLight as string,
+  borderSubtle: PALETTE.borderSubtleLight as string,
 
   // Feedback & Status
-  success: PALETTE.successGreen,
+  success: PALETTE.successGreen as string,
   successBackground: '#EBF5EE',
-  error: PALETTE.errorRed,
+  error: PALETTE.errorRed as string,
   errorBackground: '#FDF2F2',
-  warning: PALETTE.warningAmber,
+  warning: PALETTE.warningAmber as string,
   warningBackground: '#FEF3C7',
-  info: PALETTE.infoBlue,
+  info: PALETTE.infoBlue as string,
 
   // Overlays & Floating elements
-  overlay: PALETTE.overlayLight,
-  pricePinBg: PALETTE.pitchDark,
-  pricePinText: PALETTE.pureWhite,
-  userLocationPin: PALETTE.electricLime,
+  overlay: PALETTE.overlayLight as string,
+  pricePinBg: PALETTE.pitchDark as string,
+  pricePinText: PALETTE.pureWhite as string,
+  userLocationPin: PALETTE.electricLime as string,
   userLocationRing: 'rgba(217, 245, 66, 0.4)',
 
   // Maps
@@ -48,4 +48,4 @@ export const lightColors = {
   mapPark: '#E2EBD9',
 };
 
-export type ThemeColors = typeof lightColors;
+export type ThemeColors = { [K in keyof typeof lightColors]: string };

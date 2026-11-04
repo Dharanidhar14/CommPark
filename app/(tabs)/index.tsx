@@ -21,7 +21,7 @@ import { ActivePassBanner } from '../../src/components/common/ActivePassBanner';
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, isDark } = useTheme();
 
   const user = useAuthStore((s) => s.user);
   const activeBooking = useBookingStore((s) => s.activeBooking);
@@ -53,7 +53,7 @@ export default function HomeScreen() {
         <View style={[styles.headerRow, { paddingHorizontal: spacing.lg }]}>
           <View>
             <View style={styles.locationPill}>
-              <AppIcon name="location" size={14} color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'} />
+              <AppIcon name="location" size={14} color={isDark ? colors.primary : '#49570B'} />
               <AppText variant="captionSmall" weight="bold" style={{ marginLeft: 4 }}>
                 CURRENT LOCATION
               </AppText>
@@ -156,7 +156,7 @@ export default function HomeScreen() {
               </AppText>
             </View>
             <Pressable onPress={() => router.push('/(tabs)/explore' as any)}>
-              <AppText variant="caption" weight="bold" color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'}>
+              <AppText variant="caption" weight="bold" color={isDark ? colors.primary : '#49570B'}>
                 View all ({securitySpaces.length})
               </AppText>
             </Pressable>

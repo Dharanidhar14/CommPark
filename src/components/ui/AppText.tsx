@@ -22,7 +22,7 @@ export interface AppTextProps extends TextProps {
   color?: string;
   align?: 'left' | 'center' | 'right';
   weight?: 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold';
-  style?: TextStyle | TextStyle[];
+  style?: TextStyle | (TextStyle | undefined)[] | undefined;
   children: React.ReactNode;
 }
 

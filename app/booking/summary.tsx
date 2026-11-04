@@ -122,7 +122,7 @@ export default function BookingSummaryScreen() {
                     },
                   ]}
                 >
-                  <AppIcon name="car-sport" size={20} color={isSelected ? colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B' : colors.secondaryText} />
+                  <AppIcon name="car-sport" size={20} color={isSelected ? (isDark ? colors.primary : '#49570B') : colors.secondaryText} />
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <AppText variant="bodyBold">
                       {veh.make} {veh.model} ({veh.licensePlate})
@@ -134,7 +134,7 @@ export default function BookingSummaryScreen() {
                   <AppIcon
                     name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
                     size={20}
-                    color={isSelected ? colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B' : colors.secondaryText}
+                    color={isSelected ? (isDark ? colors.primary : '#49570B') : colors.secondaryText}
                   />
                 </Pressable>
               );
@@ -204,7 +204,7 @@ export default function BookingSummaryScreen() {
               <AppIcon
                 name={paymentMethod === 'wallet' ? 'radio-button-on' : 'radio-button-off'}
                 size={20}
-                color={paymentMethod === 'wallet' ? colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B' : colors.secondaryText}
+                color={paymentMethod === 'wallet' ? (isDark ? colors.primary : '#49570B') : colors.secondaryText}
               />
             </Pressable>
           </View>

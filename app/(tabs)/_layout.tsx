@@ -46,7 +46,7 @@ export default function TabLayout() {
               <AppIcon
                 name={focused ? 'home' : 'home-outline'}
                 size={22}
-                color={color}
+                color={color as string}
               />
             </TabIconContainer>
           ),
@@ -61,7 +61,7 @@ export default function TabLayout() {
               <AppIcon
                 name={focused ? 'map' : 'map-outline'}
                 size={22}
-                color={color}
+                color={color as string}
               />
             </TabIconContainer>
           ),
@@ -83,7 +83,7 @@ export default function TabLayout() {
               <AppIcon
                 name={focused ? 'calendar' : 'calendar-outline'}
                 size={22}
-                color={color}
+                color={color as string}
               />
             </TabIconContainer>
           ),
@@ -98,7 +98,7 @@ export default function TabLayout() {
               <AppIcon
                 name={focused ? 'wallet' : 'wallet-outline'}
                 size={22}
-                color={color}
+                color={color as string}
               />
             </TabIconContainer>
           ),
@@ -113,7 +113,7 @@ export default function TabLayout() {
               <AppIcon
                 name={focused ? 'person' : 'person-outline'}
                 size={22}
-                color={color}
+                color={color as string}
               />
             </TabIconContainer>
           ),

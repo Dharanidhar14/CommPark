@@ -16,7 +16,7 @@ export const AccessTypePill: React.FC<AccessTypePillProps> = ({
   compact = false,
   style,
 }) => {
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, isDark } = useTheme();
 
   const getConfig = (): {
     label: string;
@@ -47,7 +47,7 @@ export const AccessTypePill: React.FC<AccessTypePillProps> = ({
           label: compact ? 'Direct Access' : 'Direct Access Bay',
           icon: 'flash-outline',
           bg: 'rgba(217, 245, 66, 0.15)',
-          text: colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#879E0B',
+          text: isDark ? colors.primary : '#879E0B',
           border: 'rgba(217, 245, 66, 0.4)',
         };
       case 'facility_managed':

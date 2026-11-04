@@ -19,7 +19,7 @@ import { AppBadge } from '../../src/components/ui/AppBadge';
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { colors, spacing, radius, mode, setMode } = useTheme();
+  const { colors, spacing, radius, mode, setMode, isDark } = useTheme();
 
   const { user, switchRole, vehicles } = useAuthStore();
 
@@ -218,7 +218,7 @@ export default function ProfileScreen() {
         <View style={{ marginTop: spacing.xl }}>
           <View style={styles.sectionHeader}>
             <AppText variant="h3">Registered Vehicles</AppText>
-            <AppText variant="caption" weight="bold" color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'}>
+            <AppText variant="caption" weight="bold" color={isDark ? colors.primary : '#49570B'}>
               + Add Vehicle
             </AppText>
           </View>

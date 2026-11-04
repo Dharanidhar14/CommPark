@@ -98,7 +98,7 @@ export default function ParkingDetailsScreen() {
           </AppText>
 
           <View style={[styles.locationRow, { marginTop: spacing.xs }]}>
-            <AppIcon name="location-sharp" size={16} color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'} />
+            <AppIcon name="location-sharp" size={16} color={isDark ? colors.primary : '#49570B'} />
             <AppText variant="body" color={colors.secondaryText} style={{ marginLeft: 6 }}>
               {space.address}, {space.city} ({space.distanceKm} km away)
             </AppText>
@@ -140,7 +140,7 @@ export default function ParkingDetailsScreen() {
                     : 'business'
                 }
                 size={22}
-                color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'}
+                color={isDark ? colors.primary : '#49570B'}
               />
               <AppText variant="h4" style={{ marginLeft: 8 }}>
                 Access Procedure

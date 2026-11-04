@@ -22,7 +22,7 @@ import { AccessTypePill } from '../../src/components/parking/AccessTypePill';
 export default function OwnerDashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, isDark } = useTheme();
 
   const user = useAuthStore((s) => s.user);
 
@@ -62,7 +62,7 @@ export default function OwnerDashboardScreen() {
             <AppText variant="captionSmall" color={colors.secondaryText}>
               MONTHLY EARNINGS
             </AppText>
-            <AppText variant="h2" weight="extraBold" color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'} style={{ marginTop: 4 }}>
+            <AppText variant="h2" weight="extraBold" color={isDark ? colors.primary : '#49570B'} style={{ marginTop: 4 }}>
               ${user.wallet.earnedAsOwner.toFixed(2)}
             </AppText>
             <AppText variant="captionSmall" color={colors.success} style={{ marginTop: 2 }}>

@@ -161,7 +161,7 @@ export default function DigitalPassScreen() {
                 <AppText variant="captionSmall" color={colors.secondaryText}>
                   GATE ACCESS CODE
                 </AppText>
-                <AppText variant="h3" weight="extraBold" color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'}>
+                <AppText variant="h3" weight="extraBold" color={isDark ? colors.primary : '#49570B'}>
                   {activeBooking.accessCode}
                 </AppText>
               </View>
@@ -178,7 +178,7 @@ export default function DigitalPassScreen() {
                 },
               ]}
             >
-              <AppIcon name="shield-checkmark" size={16} color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'} />
+              <AppIcon name="shield-checkmark" size={16} color={isDark ? colors.primary : '#49570B'} />
               <AppText variant="captionSmall" color={colors.text} style={{ marginLeft: 6, flex: 1 }}>
                 {activeBooking.space.accessInstructions}
               </AppText>

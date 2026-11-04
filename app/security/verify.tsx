@@ -225,7 +225,7 @@ export default function SecurityVerifyScreen() {
                   },
                 ]}
               >
-                <AppIcon name="gift-outline" size={18} color={colors.primaryForeground === '#171A18' && colors.background === '#171A18' ? colors.primary : '#49570B'} />
+                <AppIcon name="gift-outline" size={18} color={isDark ? colors.primary : '#49570B'} />
                 <AppText variant="captionSmall" weight="semiBold" style={{ marginLeft: 6, flex: 1 }}>
                   Verification Recorded. +$1.50 incentive credited to guard wallet.
                 </AppText>

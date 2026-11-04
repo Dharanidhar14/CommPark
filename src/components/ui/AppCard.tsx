@@ -6,7 +6,7 @@ export interface AppCardProps {
   children: React.ReactNode;
   onPress?: () => void;
   variant?: 'elevated' | 'outlined' | 'subtle';
-  style?: ViewStyle;
+  style?: ViewStyle | (ViewStyle | undefined)[] | undefined;
 }
 
 export const AppCard: React.FC<AppCardProps> = ({
