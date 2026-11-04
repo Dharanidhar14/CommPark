@@ -126,7 +126,7 @@ export const SimulatedMap: React.FC<CommunityMapViewProps> = ({
             >
               <ParkingPrice
                 price={marker.price}
-                currency={marker.currency || '$'}
+                currency={marker.currency || '₹'}
                 variant="floating"
                 isSelected={isSelected}
               />
@@ -141,6 +141,28 @@ export const SimulatedMap: React.FC<CommunityMapViewProps> = ({
             </Pressable>
           );
         })}
+      </View>
+
+      {/* Top Search This Area Pill */}
+      <View style={styles.searchThisAreaContainer}>
+        <Pressable
+          onPress={handleReset}
+          style={({ pressed }) => [
+            styles.searchThisAreaBtn,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDark ? 0.3 : 0.08,
+              shadowRadius: 6,
+              opacity: pressed ? 0.9 : 1,
+            },
+          ]}
+        >
+          <AppIcon name="refresh-outline" size={14} color={isDark ? colors.primary : '#49570B'} style={{ marginRight: 6 }} />
+          <AppText variant="captionSmall" weight="bold">Search This Area</AppText>
+        </Pressable>
       </View>
 
       {/* Map Controls Overlay */}
@@ -309,6 +331,23 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     marginTop: -1,
+  },
+  searchThisAreaContainer: {
+    position: 'absolute',
+    top: 14,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 30,
+  },
+  searchThisAreaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    elevation: 3,
   },
   controlsOverlay: {
     position: 'absolute',
