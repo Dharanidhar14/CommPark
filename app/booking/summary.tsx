@@ -645,6 +645,11 @@ export default function BookingSummaryScreen() {
         onClose={() => setIsAddVehicleOpen(false)}
         onVehicleAdded={(veh) => {
           addVehicle(veh);
+          const currentVehicles = useAuthStore.getState().vehicles;
+          const newlyAdded = currentVehicles[currentVehicles.length - 1];
+          if (newlyAdded) {
+            setDraftVehicle(newlyAdded);
+          }
         }}
       />
 

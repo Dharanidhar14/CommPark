@@ -7,7 +7,7 @@ import {
   Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../src/theme';
 import { useBookingStore } from '../../src/store/useBookingStore';
 import { AppHeader } from '../../src/components/ui/AppHeader';
@@ -21,9 +21,11 @@ import { AccessTypePill } from '../../src/components/parking/AccessTypePill';
 export default function DigitalPassScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const { colors, spacing, radius, isDark } = useTheme();
 
-  const activeBooking = useBookingStore((s) => s.activeBooking);
+  const { activeBooking: storeActiveBooking, bookings } = useBookingStore();
+  const activeBooking = id ? bookings.find((b) => b.id === id) || storeActiveBooking : storeActiveBooking;
   const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   if (!activeBooking) {

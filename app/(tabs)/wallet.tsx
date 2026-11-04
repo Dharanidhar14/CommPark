@@ -23,18 +23,18 @@ export default function WalletScreen() {
   const transactions = [
     {
       id: 'tx_1',
-      title: 'Greenwood Heights Parking',
+      title: 'Greenwood Heights Parking Bay',
       type: 'payment',
       date: 'Today, 6:15 PM',
-      amount: -21.75,
+      amount: -195.00,
       badge: 'Parking Pass',
     },
     {
       id: 'tx_2',
-      title: 'Driveway Rental Payout',
+      title: 'Driveway Rental Payout (Indiranagar)',
       type: 'payout',
       date: 'Nov 02, 2026',
-      amount: +48.00,
+      amount: +450.00,
       badge: 'Owner Earning',
     },
     {
@@ -42,15 +42,15 @@ export default function WalletScreen() {
       title: 'Gate 2 Security Verification Incentive',
       type: 'incentive',
       date: 'Nov 01, 2026',
-      amount: +4.50,
+      amount: +15.00,
       badge: 'Guard Incentive',
     },
     {
       id: 'tx_4',
-      title: 'MetroCenter Commercial Garage',
+      title: 'Nexus Commercial Retailers Spot',
       type: 'payment',
       date: 'Oct 29, 2026',
-      amount: -18.00,
+      amount: -140.00,
       badge: 'Parking Pass',
     },
   ];
@@ -92,7 +92,7 @@ export default function WalletScreen() {
             </AppText>
             <View style={[styles.currencyPill, { backgroundColor: colors.primary }]}>
               <AppText variant="captionSmall" weight="bold" color={colors.primaryForeground}>
-                USD
+                INR (₹)
               </AppText>
             </View>
           </View>
@@ -103,7 +103,7 @@ export default function WalletScreen() {
             color={colors.pricePinText}
             style={[styles.balanceNumber, { marginTop: spacing.xs }]}
           >
-            ${user.wallet.balance.toFixed(2)}
+            ₹{user.wallet.balance.toFixed(2)}
           </AppText>
 
           <View
@@ -122,7 +122,7 @@ export default function WalletScreen() {
                 Space Owner Earned
               </AppText>
               <AppText variant="bodyBold" color={colors.pricePinText}>
-                +${user.wallet.earnedAsOwner.toFixed(2)}
+                +₹{user.wallet.earnedAsOwner.toFixed(2)}
               </AppText>
             </View>
 
@@ -131,7 +131,7 @@ export default function WalletScreen() {
                 Guard Incentives
               </AppText>
               <AppText variant="bodyBold" color={colors.primary}>
-                +${user.wallet.earnedAsSecurityGuard.toFixed(2)}
+                +₹{user.wallet.earnedAsSecurityGuard.toFixed(2)}
               </AppText>
             </View>
           </View>
@@ -206,7 +206,7 @@ export default function WalletScreen() {
                     weight="bold"
                     color={tx.amount > 0 ? colors.success : colors.text}
                   >
-                    {tx.amount > 0 ? `+$${tx.amount.toFixed(2)}` : `-$${Math.abs(tx.amount).toFixed(2)}`}
+                    {tx.amount > 0 ? `+₹${tx.amount.toFixed(2)}` : `-₹${Math.abs(tx.amount).toFixed(2)}`}
                   </AppText>
                 </View>
               </AppCard>

@@ -108,7 +108,7 @@ export default function BookingsScreen() {
             {filteredBookings.map((booking) => (
               <AppCard
                 key={booking.id}
-                onPress={() => router.push('/booking/pass' as any)}
+                onPress={() => router.push({ pathname: '/booking/pass', params: { id: booking.id } } as any)}
                 style={styles.bookingCard}
               >
                 <View style={styles.bookingHeader}>
@@ -163,7 +163,7 @@ export default function BookingsScreen() {
 
                   <AppButton
                     title="View Pass & QR"
-                    onPress={() => router.push('/booking/pass' as any)}
+                    onPress={() => router.push({ pathname: '/booking/pass', params: { id: booking.id } } as any)}
                     variant="secondary"
                     size="sm"
                     fullWidth={false}
