@@ -163,7 +163,7 @@ export default function HomeScreen() {
 
           {/* List Your Space */}
           <Pressable
-            onPress={() => router.push('/owner' as any)}
+            onPress={() => router.push('/owner/new-listing' as any)}
             style={({ pressed }) => [
               styles.actionCard,
               {
@@ -236,6 +236,53 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
+
+        {/* Host Invitation Banner */}
+        <View style={{ marginTop: spacing.xl, paddingHorizontal: spacing.lg }}>
+          <View
+            style={[
+              styles.hostBanner,
+              {
+                backgroundColor: colors.pricePinBg,
+                borderColor: colors.primary,
+                borderRadius: radius.card,
+                padding: spacing.md,
+                borderWidth: 1.5,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <AppIcon name="cash-outline" size={18} color={colors.primary} />
+              <AppText variant="captionSmall" weight="bold" color={colors.primary}>
+                MONETIZE IDLE SPACES
+              </AppText>
+            </View>
+            <AppText variant="h3" color={colors.pricePinText} style={{ marginTop: 4 }}>
+              Earn ₹5,000 – ₹12,000/month
+            </AppText>
+            <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2, lineHeight: 16 }}>
+              Share your vacant residential parking slot or bungalow driveway with verified community members.
+            </AppText>
+            <Pressable
+              onPress={() => router.push('/owner/new-listing' as any)}
+              style={[
+                styles.hostBtn,
+                {
+                  backgroundColor: colors.primary,
+                  borderRadius: radius.pill,
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  alignSelf: 'flex-start',
+                  marginTop: spacing.sm,
+                },
+              ]}
+            >
+              <AppText variant="caption" weight="bold" color={colors.primaryForeground}>
+                + List Your Parking Space
+              </AppText>
+            </Pressable>
+          </View>
+        </View>
 
         {/* Section 3: Direct Sensor Bays & Tech Commercial Hubs */}
         <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.lg }}>
@@ -337,5 +384,11 @@ const styles = StyleSheet.create({
   },
   horizontalList: {
     paddingVertical: 4,
+  },
+  hostBanner: {},
+  hostBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

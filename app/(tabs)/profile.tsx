@@ -263,6 +263,32 @@ export default function ProfileScreen() {
           <AppText variant="h3">Information & Resources</AppText>
           <View style={{ marginTop: spacing.sm, gap: 10 }}>
             <Pressable
+              onPress={() => router.push('/owner' as any)}
+              style={({ pressed }) => [
+                styles.linkCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="business-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Owner Dashboard & Listings</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Manage spaces, toggle live availability & track earnings
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            <Pressable
               onPress={() => router.push('/about' as any)}
               style={({ pressed }) => [
                 styles.linkCard,

@@ -29,11 +29,26 @@ export type Amenity =
   | '24_7_access'
   | 'water_wash';
 
-export type ApprovalStatus = 'approved' | 'pending' | 'rejected';
+export type ApprovalStatus =
+  | 'submitted'
+  | 'pending_approval'
+  | 'approved'
+  | 'rejected'
+  | 'suspended';
 
 export interface Coordinates {
   latitude: number;
   longitude: number;
+}
+
+export interface CommunityApprovalInfo {
+  societyName: string;
+  unitOrFlatNumber: string;
+  slotNumber: string;
+  associationContact?: string;
+  submittedAt?: string;
+  approvedAt?: string;
+  rejectionReason?: string;
 }
 
 export interface ParkingOwner {
@@ -80,9 +95,11 @@ export interface ParkingSpace {
   availableSpots: number;
   totalSpots: number;
   approvalStatus: ApprovalStatus;
+  communityInfo?: CommunityApprovalInfo;
   accessInstructions: string;
   securityGuardOnSite: boolean;
   guardVerificationReward?: number;
+  ownerId?: string;
   owner: ParkingOwner;
   rules: string[];
   dimensions: SpaceDimensions;

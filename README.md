@@ -46,11 +46,11 @@ CommPark/
 │   ├── about.tsx                 # About CommunityPark (Mission, values, 4 access types, responsible parking)
 │   ├── (tabs)/                   # 5 primary bottom navigation tabs
 │   │   ├── _layout.tsx           # Custom styled tab bar with Electric Lime indicators
-│   │   ├── index.tsx             # 1. Customer Home (hero, locality selector, active pass, nearby spots)
+│   │   ├── index.tsx             # 1. Customer Home (hero, locality selector, active pass, monetize banner, nearby spots)
 │   │   ├── explore.tsx           # 2. Explore Map (vector discovery map, floating pins & interactive filter sheet)
 │   │   ├── bookings.tsx          # 3. Bookings list & active pass shortcut
-│   │   ├── wallet.tsx            # 4. Wallet, payouts, and guard incentives
-│   │   └── profile.tsx           # 5. Profile & multi-role switcher (+ Add vehicle & About links)
+│   │   ├── wallet.tsx            # 4. Wallet, payouts, and guard incentives in INR (₹)
+│   │   └── profile.tsx           # 5. Profile & multi-role switcher (+ Add vehicle, About, Owner dashboard links)
 │   ├── parking/
 │   │   └── [id].tsx              # 6. Parking details (carousel dots, dimensions, landmarks, security rules)
 │   ├── booking/
@@ -58,9 +58,13 @@ CommPark/
 │   │   ├── confirmation.tsx      # 8. Booking confirmation screen (booking ID, reservation summary)
 │   │   └── pass.tsx              # 9. Digital parking pass with demo watermark, dynamic QR, directions
 │   ├── owner/
-│   │   └── index.tsx             # 10. Owner dashboard (listings & earnings in INR)
+│   │   ├── index.tsx             # 10. Owner dashboard (metrics, listings with approval states, upcoming reservations)
+│   │   ├── new-listing.tsx       # 11. 5-step guided listing workflow with apartment RWA approval rules
+│   │   ├── earnings.tsx          # 12. Owner earnings breakdown, utilization & simulated IMPS bank transfers
+│   │   └── listing/
+│   │       └── [id].tsx          # 13. Listing management, edit rates, availability toggle & RWA simulator
 │   ├── security/
-│   │   └── verify.tsx            # 11. Security guard QR scanner & vehicle check (+₹15 incentive log)
+│   │   └── verify.tsx            # 14. Security guard QR scanner & vehicle check (+₹15 incentive log)
 │   └── +not-found.tsx            # 404 handler
 ├── src/
 │   ├── theme/                    # Centralised design tokens & hook
@@ -82,8 +86,8 @@ CommPark/
 │   │   │   ├── types.ts          # Map interfaces (IMapProvider, MapCoordinate, MapMarkerItem)
 │   │   │   ├── SimulatedMap.tsx  # Vector canvas map with lime user pin & price tags in INR
 │   │   │   └── MapView.tsx       # Unified CommunityMapView wrapper
-│   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore)
-│   ├── types/                    # Domain models (ParkingSpace, Booking, User, AccessType)
+│   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore, useOwnerStore)
+│   ├── types/                    # Domain models (ParkingSpace, Booking, User, AccessType, OwnerReservation, etc.)
 │   ├── constants/
 │   │   └── mockData.ts           # Single source of truth mock database localized in INR
 │   └── features/
@@ -122,4 +126,5 @@ npx expo-doctor
 - **No Random Emojis as UI Icons:** Consistent vector iconography via `@expo/vector-icons` Ionicons.
 - **Provider-Independent Mapping:** Vector map rendering runs without external API keys or native binaries, fully tested on Web, iOS and Android.
 - **Explicit Mock & Demo Identification:** All simulated parking passes, vehicle checks, and payment transactions carry prominent DEMO visual badges to prevent confusion with real-world security credentials.
-- **Single Source of Truth:** Centralized mock database in `src/constants/mockData.ts` drives all customer, owner, and security views consistently.
+- **Apartment Community Governance:** Residential parking bays require RWA verification before becoming publicly discoverable and bookable; owners cannot bypass society rules.
+- **Single Source of Truth:** Centralized mock database in `src/constants/mockData.ts` and `src/store/useOwnerStore.ts` drives all customer, owner, and security views consistently.
