@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
   StyleSheet,
   Pressable,
+  Share,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,6 +35,8 @@ export default function ParkingDetailsScreen() {
   const setDraftVehicle = useBookingStore((s) => s.setDraftVehicle);
   const vehicles = useAuthStore((s) => s.vehicles);
 
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   if (!space) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -57,14 +60,24 @@ export default function ParkingDetailsScreen() {
     router.push('/booking/summary' as any);
   };
 
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Reserve parking at ${space.name} (${space.locality}, ${space.city}) on CommunityPark for ₹${space.pricePerHour}/hr.`,
+      });
+    } catch {
+      // ignore
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <AppHeader
         title={space.name}
-        subtitle={space.neighborhood}
+        subtitle={`${space.locality}, ${space.city}`}
         showBack
         rightAction={
-          <Pressable style={styles.shareBtn}>
+          <Pressable onPress={handleShare} style={styles.shareBtn} hitSlop={8}>
             <AppIcon name="share-outline" size={20} color={colors.text} />
           </Pressable>
         }
@@ -77,12 +90,33 @@ export default function ParkingDetailsScreen() {
           { paddingBottom: insets.bottom + 90 },
         ]}
       >
-        {/* Photo Gallery Hero */}
+        {/* Photo Gallery with Indicator */}
         <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.xs }}>
-          <ParkingImage uri={space.images[0]} height={220} covered={space.covered} />
+          <ParkingImage
+            uri={space.images[activeImageIndex] || space.images[0]}
+            height={220}
+            covered={space.covered}
+          />
+          {space.images.length > 1 && (
+            <View style={styles.galleryThumbnailsRow}>
+              {space.images.map((img, idx) => (
+                <Pressable
+                  key={idx}
+                  onPress={() => setActiveImageIndex(idx)}
+                  style={[
+                    styles.thumbnailDot,
+                    {
+                      backgroundColor: activeImageIndex === idx ? colors.primary : colors.border,
+                      width: activeImageIndex === idx ? 20 : 8,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          )}
         </View>
 
-        <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.lg }}>
+        <View style={{ paddingHorizontal: spacing.lg, marginTop: spacing.md }}>
           {/* Top Access Badge & Availability */}
           <View style={styles.metaHeaderRow}>
             <AccessTypePill accessType={space.accessType} />
@@ -100,11 +134,11 @@ export default function ParkingDetailsScreen() {
           <View style={[styles.locationRow, { marginTop: spacing.xs }]}>
             <AppIcon name="location-sharp" size={16} color={isDark ? colors.primary : '#49570B'} />
             <AppText variant="body" color={colors.secondaryText} style={{ marginLeft: 6 }}>
-              {space.address}, {space.city} ({space.distanceKm} km away)
+              {space.address}, {space.locality}, {space.city} ({space.distanceKm} km away)
             </AppText>
           </View>
 
-          {/* Ratings & Reviews */}
+          {/* Ratings & Operating Hours */}
           <View style={[styles.ratingRow, { marginTop: spacing.sm }]}>
             <View style={styles.starBadge}>
               <AppIcon name="star" size={15} color="#F59E0B" />
@@ -113,8 +147,14 @@ export default function ParkingDetailsScreen() {
               </AppText>
             </View>
             <AppText variant="caption" color={colors.secondaryText} style={{ marginLeft: 8 }}>
-              • {space.reviewCount} community verified reviews
+              • {space.reviewCount} verified reviews
             </AppText>
+            <View style={[styles.hoursBadge, { backgroundColor: colors.surfaceSubtle, borderRadius: radius.sm }]}>
+              <AppIcon name="time-outline" size={12} color={colors.secondaryText} style={{ marginRight: 4 }} />
+              <AppText variant="captionSmall" color={colors.secondaryText}>
+                {space.operatingHours}
+              </AppText>
+            </View>
           </View>
 
           {/* Access Workflow Explainer Card (Key Differentiator) */}
@@ -151,18 +191,88 @@ export default function ParkingDetailsScreen() {
               {space.accessInstructions}
             </AppText>
 
-            {space.securityGuardOnSite && (
+            {space.accessType === 'security_verified' && (
               <View style={[styles.guardNotice, { backgroundColor: colors.surface, borderRadius: radius.md, marginTop: spacing.sm }]}>
-                <AppIcon name="checkmark-circle" size={16} color={colors.success} />
+                <AppIcon name="shield-checkmark" size={16} color={colors.success} />
                 <AppText variant="captionSmall" weight="semiBold" style={{ marginLeft: 6, flex: 1 }}>
-                  Security guard verified at entry gate. Digital booking QR code pass issued upon booking.
+                  Residential Community Approval: Society gate security verifies your digital booking pass and checks registered vehicle plate before authorized entry.
+                </AppText>
+              </View>
+            )}
+
+            {space.accessType === 'direct_access' && (
+              <View style={[styles.guardNotice, { backgroundColor: colors.surface, borderRadius: radius.md, marginTop: spacing.sm }]}>
+                <AppIcon name="flash" size={16} color={isDark ? colors.primary : '#49570B'} />
+                <AppText variant="captionSmall" weight="semiBold" style={{ marginLeft: 6, flex: 1 }}>
+                  Direct Entry: No security guard check required. Automatic smart bollard or open parking slot.
                 </AppText>
               </View>
             )}
           </AppCard>
 
+          {/* Space Specifications & Dimensions */}
+          <View style={{ marginTop: spacing.xl }}>
+            <AppText variant="h3">Space Specifications</AppText>
+            <View style={[styles.specsGrid, { marginTop: spacing.sm }]}>
+              <View style={[styles.specBox, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md }]}>
+                <AppIcon name="resize-outline" size={18} color={colors.secondaryText} />
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 4 }}>
+                  DIMENSIONS
+                </AppText>
+                <AppText variant="bodyBold">
+                  {space.dimensions.lengthMeters}m × {space.dimensions.widthMeters}m
+                </AppText>
+              </View>
+
+              <View style={[styles.specBox, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md }]}>
+                <AppIcon name={space.covered ? 'umbrella' : 'sunny'} size={18} color={colors.secondaryText} />
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 4 }}>
+                  CANOPY
+                </AppText>
+                <AppText variant="bodyBold">
+                  {space.covered ? 'Covered / Shaded' : 'Open Sky Bay'}
+                </AppText>
+              </View>
+
+              {space.dimensions.heightClearanceMeters && (
+                <View style={[styles.specBox, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md }]}>
+                  <AppIcon name="swap-vertical" size={18} color={colors.secondaryText} />
+                  <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 4 }}>
+                    MAX HEIGHT
+                  </AppText>
+                  <AppText variant="bodyBold">
+                    {space.dimensions.heightClearanceMeters}m
+                  </AppText>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Supported Vehicles Chips */}
+          <View style={{ marginTop: spacing.lg }}>
+            <AppText variant="caption" weight="bold" color={colors.secondaryText}>
+              SUPPORTED VEHICLES
+            </AppText>
+            <View style={[styles.vehicleChipsRow, { marginTop: spacing.xs }]}>
+              {space.supportedVehicles.map((veh) => (
+                <View
+                  key={veh}
+                  style={[
+                    styles.vehicleChip,
+                    { backgroundColor: colors.surfaceSubtle, borderColor: colors.borderSubtle, borderRadius: radius.pill },
+                  ]}
+                >
+                  <AppIcon name="car" size={14} color={isDark ? colors.primary : '#49570B'} style={{ marginRight: 6 }} />
+                  <AppText variant="captionSmall" weight="bold">
+                    {veh.toUpperCase()}
+                  </AppText>
+                </View>
+              ))}
+            </View>
+          </View>
+
           {/* Host / Owner Info */}
-          <AppCard style={{ marginTop: spacing.md }}>
+          <AppCard style={{ marginTop: spacing.xl }}>
             <View style={styles.hostRow}>
               <View
                 style={[
@@ -183,11 +293,31 @@ export default function ParkingDetailsScreen() {
                   )}
                 </View>
                 <AppText variant="captionSmall" color={colors.secondaryText}>
-                  {space.owner.communityName || 'Verified Property Host'} • {space.owner.responseRatePercent}% response rate
+                  {space.owner.communityName || 'Verified Property Host'} • Member since {space.owner.joinedYear || 2024}
+                </AppText>
+                <AppText variant="captionSmall" color={colors.success} weight="semiBold" style={{ marginTop: 2 }}>
+                  {space.owner.responseRatePercent}% response rate
                 </AppText>
               </View>
             </View>
           </AppCard>
+
+          {/* Nearby Landmarks */}
+          {space.nearbyLandmarks.length > 0 && (
+            <View style={{ marginTop: spacing.xl }}>
+              <AppText variant="h3">Nearby Landmarks</AppText>
+              <View style={{ marginTop: spacing.xs }}>
+                {space.nearbyLandmarks.map((lm, idx) => (
+                  <View key={idx} style={styles.landmarkRow}>
+                    <AppIcon name="navigate-circle-outline" size={16} color={isDark ? colors.primary : '#49570B'} />
+                    <AppText variant="body" color={colors.secondaryText} style={{ marginLeft: 8 }}>
+                      {lm}
+                    </AppText>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
 
           {/* Amenities Grid */}
           <View style={{ marginTop: spacing.xl }}>
@@ -214,7 +344,7 @@ export default function ParkingDetailsScreen() {
             </View>
           </View>
 
-          {/* Parking Rules */}
+          {/* Community Guidelines */}
           <View style={{ marginTop: spacing.xl }}>
             <AppText variant="h3">Community Guidelines</AppText>
             <View style={{ marginTop: spacing.xs }}>
@@ -252,11 +382,11 @@ export default function ParkingDetailsScreen() {
         <View style={styles.priceContainer}>
           <ParkingPrice price={space.pricePerHour} currency={space.currency} period="hr" />
           <AppText variant="captionSmall" color={colors.secondaryText}>
-            or {space.currency}{space.pricePerDay.toFixed(2)}/day
+            or {space.currency}{space.pricePerDay}/day
           </AppText>
         </View>
 
-        <View style={{ width: 170 }}>
+        <View style={{ width: 180 }}>
           <AppButton
             title="Book Space"
             onPress={handleBookNow}
@@ -283,6 +413,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  galleryThumbnailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 6,
+  },
+  thumbnailDot: {
+    height: 8,
+    borderRadius: 4,
+  },
   metaHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -295,10 +436,18 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   starBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  hoursBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   accessExplainerCard: {
     borderWidth: 1,
@@ -307,6 +456,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
+  },
+  specsGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  specBox: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  vehicleChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  vehicleChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
   },
   hostRow: {
     flexDirection: 'row',
@@ -317,6 +488,11 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  landmarkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   amenitiesGrid: {
     flexDirection: 'row',
