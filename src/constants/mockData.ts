@@ -8,7 +8,7 @@ export const MOCK_CURRENT_USER: UserProfile = {
   email: 'aditya.sharma@example.in',
   phone: '+91 98450 12890',
   activeRole: 'customer',
-  eligibleRoles: ['customer', 'owner', 'security'],
+  eligibleRoles: ['customer', 'owner', 'security', 'community_admin'],
   communityId: 'comm_greenwood_blr',
   communityName: 'Greenwood Palms Residents Welfare Association',
   city: 'Bengaluru',

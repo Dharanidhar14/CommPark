@@ -10,6 +10,7 @@
     "ts:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/google-sans": "^0.4.4",
     "@expo-google-fonts/manrope": "^0.4.3",
     "@expo/vector-icons": "^15.0.2",
     "@hookform/resolvers": "^7.0.2",

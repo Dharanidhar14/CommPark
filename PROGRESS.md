@@ -96,7 +96,32 @@
 ---
 
 ## Upcoming Milestones
-- [ ] **Milestone 4: Security and Community Administration (Task 04)**
+- [x] **Milestone 4: Security and Community Administration (Task 04 - Completed)**
+  - [x] **Mandatory Typography Migration to Google Sans**:
+    - [x] Integrated official `@expo-google-fonts/google-sans` (`^0.4.4`).
+    - [x] Centralised `src/theme/typography.ts` with `GoogleSans_400Regular`, `GoogleSans_500Medium`, `GoogleSans_600SemiBold`, `GoogleSans_700Bold`, and system fallbacks.
+    - [x] Updated root `app/_layout.tsx` to load fonts via `useFonts`.
+  - [x] **Security Personnel Portal (`app/security/`)**:
+    - [x] `app/security/index.tsx`: Security Guard Dashboard with on/off duty toggle, property identification (*Greenwood Palms RWA*), expected arrivals queue, currently parked vehicles registry, and guard incentive summary (₹15/scan).
+    - [x] `app/security/verify.tsx`: QR Scanner viewfinder and multi-scenario verification sandbox (Valid, Expired, Cancelled, Plate Mismatch, Duplicate Check-in, Unapproved Apartment Listing).
+    - [x] Recorded vehicle entries and exits, guard wallet credit calculation, and automated audit event dispatch to RWA.
+  - [x] **Community Administration Portal (`app/admin/`)**:
+    - [x] `app/admin/index.tsx`: Community Administration Dashboard with registered units, live bays, active staff, and direct governance navigation.
+    - [x] `app/admin/approvals.tsx`: RWA Listing Authorization Portal to approve or reject resident-submitted listings with required rejection reasoning; synchronized bi-directionally with `useOwnerStore`.
+    - [x] `app/admin/policies.tsx`: Community Parking Policies management (10 km/h speed limits, max booking window, external sharing, mandatory QR verification).
+    - [x] `app/admin/staff.tsx`: Security Staff Roster with gate duty assignments, contact numbers, and authorization/suspension controls.
+    - [x] `app/admin/audit.tsx`: Tamper-evident Society Audit Logs featuring full chronological timeline, category filters (Barrier Entries, Security Alerts, Listing Reviews, Bylaws & Staff), search bar, and simulated PDF/CSV export.
+  - [x] **Role-Based Navigation Integration**:
+    - [x] Updated `app/(tabs)/profile.tsx` with all 4 unified roles (Customer, Owner, Security Guard, Community Administrator).
+    - [x] Added direct links to Owner Dashboard (`/owner`), Security Portal (`/security`), Community Admin (`/admin`), and About CommunityPark (`/about`).
+  - [x] **Diagnostics & Validation**:
+    - [x] TypeScript compiler: `npm run ts:check` (0 errors).
+    - [x] Expo Doctor: `npx expo-doctor` (20/20 checks passed).
+    - [x] Static Web Export: `npx expo export -p web` (28/28 routes bundled cleanly).
+
+---
+
+## Upcoming Milestones
 - [ ] **Milestone 5: Profile, Wallet and Push Notifications Enhancements**
 - [ ] **Milestone 6: Real Backend & Authentication Integration**
 - [ ] **Milestone 7: End-to-End Testing & Production Release**

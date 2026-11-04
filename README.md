@@ -8,7 +8,7 @@
 - **Signature Accent:** Electric Lime (`#D9F542`)
 - **Light Theme:** Background `#F7F8F5` | Surface `#FFFFFF` | Text `#171A18`
 - **Dark Theme:** Background `#171A18` | Surface `#242925` | Text `#F4F6F1`
-- **Typography:** Manrope (`@expo-google-fonts/manrope`)
+- **Typography:** Google Sans (`@expo-google-fonts/google-sans`) with cross-platform fallbacks
 - **Localization:** Indian Market Standard — Indian Rupee (`₹`), localities in Bengaluru and Mumbai, Indian vehicle registration plates (`KA 01 MJ 4821`), and demo UPI payment simulation.
 - **Desktop Web Support:** Centered mobile viewport container (`maxWidth: 480`) to ensure a native smartphone look and feel on desktop browsers.
 - **Map Philosophy:** Provider-independent vector discovery abstraction (seamlessly swappable for Google Maps or Mapbox).
@@ -29,7 +29,7 @@ CommunityPark adapts access workflows based on the location:
 - **Navigation:** Expo Router v4 (file-based routing with typed routes)
 - **State Management:** Zustand (client state) & TanStack React Query (server state ready)
 - **Forms & Validation:** React Hook Form + Zod
-- **Typography:** Manrope font family (400, 500, 600, 700, 800)
+- **Typography:** Google Sans font family (400, 500, 600, 700)
 - **Storage:** Expo SecureStore
 - **Hardware Integration:** Expo Location, Expo Image Picker, Expo Notifications
 - **Design Tokens:** Centralised token architecture with dynamic light/dark/system mode switching
@@ -41,7 +41,7 @@ CommunityPark adapts access workflows based on the location:
 ```text
 CommPark/
 ├── app/                          # Expo Router routes
-│   ├── _layout.tsx               # Root layout: ThemeProvider, QueryClient, Font loading, Web responsive wrapper
+│   ├── _layout.tsx               # Root layout: ThemeProvider, QueryClient, Google Sans loading, Web responsive wrapper
 │   ├── index.tsx                 # Root redirect to main tabs
 │   ├── about.tsx                 # About CommunityPark (Mission, values, 4 access types, responsible parking)
 │   ├── (tabs)/                   # 5 primary bottom navigation tabs
@@ -50,7 +50,7 @@ CommPark/
 │   │   ├── explore.tsx           # 2. Explore Map (vector discovery map, floating pins & interactive filter sheet)
 │   │   ├── bookings.tsx          # 3. Bookings list & active pass shortcut
 │   │   ├── wallet.tsx            # 4. Wallet, payouts, and guard incentives in INR (₹)
-│   │   └── profile.tsx           # 5. Profile & multi-role switcher (+ Add vehicle, About, Owner dashboard links)
+│   │   └── profile.tsx           # 5. Profile & 4-role switcher (+ Add vehicle, Links to Owner, Security, Admin)
 │   ├── parking/
 │   │   └── [id].tsx              # 6. Parking details (carousel dots, dimensions, landmarks, security rules)
 │   ├── booking/
@@ -64,14 +64,21 @@ CommPark/
 │   │   └── listing/
 │   │       └── [id].tsx          # 13. Listing management, edit rates, availability toggle & RWA simulator
 │   ├── security/
-│   │   └── verify.tsx            # 14. Security guard QR scanner & vehicle check (+₹15 incentive log)
+│   │   ├── index.tsx             # 14. Security personnel dashboard (duty toggle, arrivals queue, parked registry, guard incentives)
+│   │   └── verify.tsx            # 15. QR scanner viewfinder & multi-scenario verification sandbox
+│   ├── admin/
+│   │   ├── index.tsx             # 16. Community administration dashboard (property metrics & governance overview)
+│   │   ├── approvals.tsx         # 17. Listing authorization portal (approve/reject resident slot submissions)
+│   │   ├── policies.tsx          # 18. Community parking policies (speed limit, booking window, sharing toggles)
+│   │   ├── staff.tsx             # 19. Security staff roster & gate duty management
+│   │   └── audit.tsx             # 20. Tamper-evident society audit logs with filters & export
 │   └── +not-found.tsx            # 404 handler
 ├── src/
 │   ├── theme/                    # Centralised design tokens & hook
 │   │   ├── colors.ts             # Electric Lime #D9F542 & color palettes
 │   │   ├── lightTheme.ts         # Light mode tokens
 │   │   ├── darkTheme.ts          # Dark mode tokens
-│   │   ├── typography.ts         # Manrope font definitions & scale
+│   │   ├── typography.ts         # Google Sans font definitions & scale
 │   │   ├── spacing.ts            # 4pt grid system
 │   │   ├── radius.ts             # Restrained border radii
 │   │   └── ThemeProvider.tsx     # useTheme() hook supporting Light/Dark/System
@@ -86,8 +93,8 @@ CommPark/
 │   │   │   ├── types.ts          # Map interfaces (IMapProvider, MapCoordinate, MapMarkerItem)
 │   │   │   ├── SimulatedMap.tsx  # Vector canvas map with lime user pin & price tags in INR
 │   │   │   └── MapView.tsx       # Unified CommunityMapView wrapper
-│   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore, useOwnerStore)
-│   ├── types/                    # Domain models (ParkingSpace, Booking, User, AccessType, OwnerReservation, etc.)
+│   ├── store/                    # Zustand stores (useThemeStore, useAuthStore, useBookingStore, useOwnerStore, useSecurityStore, useAdminStore)
+│   ├── types/                    # Domain models (ParkingSpace, Booking, User, AccessType, Security, Admin, etc.)
 │   ├── constants/
 │   │   └── mockData.ts           # Single source of truth mock database localized in INR
 │   └── features/

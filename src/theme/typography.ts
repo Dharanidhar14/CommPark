@@ -2,29 +2,29 @@ import { Platform, TextStyle } from 'react-native';
 
 export const fontFamilies = {
   regular: Platform.select({
-    ios: 'Manrope_400Regular',
-    android: 'Manrope_400Regular',
-    default: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    ios: 'GoogleSans_400Regular',
+    android: 'GoogleSans_400Regular',
+    default: 'GoogleSans_400Regular, "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   }),
   medium: Platform.select({
-    ios: 'Manrope_500Medium',
-    android: 'Manrope_500Medium',
-    default: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    ios: 'GoogleSans_500Medium',
+    android: 'GoogleSans_500Medium',
+    default: 'GoogleSans_500Medium, "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   }),
   semiBold: Platform.select({
-    ios: 'Manrope_600SemiBold',
-    android: 'Manrope_600SemiBold',
-    default: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    ios: 'GoogleSans_600SemiBold',
+    android: 'GoogleSans_600SemiBold',
+    default: 'GoogleSans_600SemiBold, "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   }),
   bold: Platform.select({
-    ios: 'Manrope_700Bold',
-    android: 'Manrope_700Bold',
-    default: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    ios: 'GoogleSans_700Bold',
+    android: 'GoogleSans_700Bold',
+    default: 'GoogleSans_700Bold, "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   }),
   extraBold: Platform.select({
-    ios: 'Manrope_800ExtraBold',
-    android: 'Manrope_800ExtraBold',
-    default: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    ios: 'GoogleSans_700Bold',
+    android: 'GoogleSans_700Bold',
+    default: 'GoogleSans_700Bold, "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   }),
 };
 
@@ -57,7 +57,7 @@ export const fontWeights = {
   medium: '500' as const,
   semiBold: '600' as const,
   bold: '700' as const,
-  extraBold: '800' as const,
+  extraBold: '700' as const,
 };
 
 export const typography: Record<string, TextStyle> = {
@@ -101,12 +101,6 @@ export const typography: Record<string, TextStyle> = {
     lineHeight: lineHeights.md,
     fontWeight: fontWeights.regular,
   },
-  bodyMedium: {
-    fontFamily: fontFamilies.medium,
-    fontSize: fontSizes.md,
-    lineHeight: lineHeights.md,
-    fontWeight: fontWeights.medium,
-  },
   bodyBold: {
     fontFamily: fontFamilies.semiBold,
     fontSize: fontSizes.md,
@@ -125,12 +119,33 @@ export const typography: Record<string, TextStyle> = {
     lineHeight: lineHeights.xs,
     fontWeight: fontWeights.regular,
   },
-  button: {
+  badge: {
     fontFamily: fontFamilies.bold,
+    fontSize: fontSizes.xxs,
+    lineHeight: lineHeights.xxs,
+    fontWeight: fontWeights.bold,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  priceDisplay: {
+    fontFamily: fontFamilies.bold,
+    fontSize: fontSizes.xl,
+    lineHeight: lineHeights.xl,
+    fontWeight: fontWeights.bold,
+    fontVariant: ['tabular-nums'],
+  },
+  priceSmall: {
+    fontFamily: fontFamilies.semiBold,
     fontSize: fontSizes.md,
     lineHeight: lineHeights.md,
-    fontWeight: fontWeights.bold,
-    letterSpacing: 0.2,
+    fontWeight: fontWeights.semiBold,
+    fontVariant: ['tabular-nums'],
+  },
+  button: {
+    fontFamily: fontFamilies.semiBold,
+    fontSize: fontSizes.md,
+    lineHeight: lineHeights.md,
+    fontWeight: fontWeights.semiBold,
   },
   buttonSmall: {
     fontFamily: fontFamilies.semiBold,
@@ -138,11 +153,10 @@ export const typography: Record<string, TextStyle> = {
     lineHeight: lineHeights.sm,
     fontWeight: fontWeights.semiBold,
   },
-  tabularPrice: {
-    fontFamily: fontFamilies.extraBold,
-    fontSize: fontSizes.lg,
-    lineHeight: lineHeights.lg,
-    fontWeight: fontWeights.extraBold,
-    fontVariant: ['tabular-nums'],
+  tabLabel: {
+    fontFamily: fontFamilies.medium,
+    fontSize: fontSizes.xxs,
+    lineHeight: lineHeights.xxs,
+    fontWeight: fontWeights.medium,
   },
 };

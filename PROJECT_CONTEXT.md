@@ -9,7 +9,7 @@
 - Language: TypeScript
 - Navigation: Expo Router
 - Development environment: Google Antigravity
-- Current development stage: Milestone 3: Owner Experience & Community Governance Completed
+- Current development stage: Milestone 4: Security Personnel and Community Administration Completed
 
 ## 2. Product vision
 CommunityPark is a community-driven parking marketplace that allows people to discover and book available parking spaces while enabling property owners and residents to monetize unused parking spaces.
@@ -51,13 +51,14 @@ One application and one user account supporting:
 - Expo managed workflow (SDK 58)
 - TypeScript (strict mode, version ~6.0.3)
 - Expo Router v4
-- Zustand for client-side state (`useThemeStore`, `useAuthStore`, `useBookingStore`, `useOwnerStore`)
+- Zustand for client-side state (`useThemeStore`, `useAuthStore`, `useBookingStore`, `useOwnerStore`, `useSecurityStore`, `useAdminStore`)
 - TanStack Query for server state
 - React Hook Form + Zod for form validations
 - Expo SecureStore
 - Expo Location, Image Picker, Notifications
 - React Native Reanimated & Worklets
 - React Native StyleSheet with centralised design tokens
+- Font package: Official `@expo-google-fonts/google-sans`
 
 ## 7. Maps architecture
 - Provider-independent map abstraction (`IMapProvider`, `CommunityMapView`, `SimulatedMap`).
@@ -75,11 +76,12 @@ One application and one user account supporting:
 - Signature brand colour: **Electric Lime (`#D9F542`)**
 - Light theme: Primary `#D9F542`, Background `#F7F8F5`, Surface `#FFFFFF`, Text `#171A18`, Secondary `#747B75`, Border `#E7EAE4`, Success `#3F865B`, Error `#D84C4C`
 - Dark theme: Primary `#D9F542`, Background `#171A18`, Surface `#242925`, Text `#F4F6F1`, Secondary `#A0AAA1`, Border `#343C35`, Success `#80C995`, Error `#FF7777`
-- Typography: Manrope (primary) / Inter (fallback)
+- Typography: Official **Google Sans** (`GoogleSans_400Regular`, `GoogleSans_500Medium`, `GoogleSans_600SemiBold`, `GoogleSans_700Bold`) with cross-platform system fallbacks.
 
 ## 10. Navigation architecture
 - Bottom tabs: Home, Explore, Bookings, Wallet, Profile.
 - Customer routes: `/parking/[id]`, `/booking/summary`, `/booking/confirmation`, `/booking/pass`, `/about`.
 - Owner routes: `/owner`, `/owner/new-listing`, `/owner/earnings`, `/owner/listing/[id]`.
-- Security routes: `/security/verify`.
+- Security routes: `/security`, `/security/verify`.
+- Admin routes: `/admin`, `/admin/approvals`, `/admin/policies`, `/admin/staff`, `/admin/audit`.
 - Responsive container: Centered `maxWidth: 480` viewport wrapper on desktop web.

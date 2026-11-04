@@ -30,7 +30,9 @@ export default function ProfileScreen() {
     if (role === 'owner') {
       router.push('/owner' as any);
     } else if (role === 'security') {
-      router.push('/security/verify' as any);
+      router.push('/security' as any);
+    } else if (role === 'community_admin') {
+      router.push('/admin' as any);
     }
   };
 
@@ -52,6 +54,12 @@ export default function ProfileScreen() {
       title: 'Security Staff Mode',
       subtitle: 'QR check, vehicle entry and guard incentive logging',
       icon: 'shield-checkmark-outline',
+    },
+    {
+      role: 'community_admin',
+      title: 'Community Administrator Mode',
+      subtitle: 'Review slot approvals, manage policies, staff & audit log',
+      icon: 'shield-half-outline',
     },
   ];
 
@@ -289,6 +297,58 @@ export default function ProfileScreen() {
             </Pressable>
 
             <Pressable
+              onPress={() => router.push('/security' as any)}
+              style={({ pressed }) => [
+                styles.linkCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="shield-checkmark-outline" size={22} color={colors.text} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Security Personnel Portal</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Gate 2 boom barrier duty, QR scanner & guard incentive log
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/admin' as any)}
+              style={({ pressed }) => [
+                styles.linkCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="shield-half-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Community Admin Portal</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  RWA listing certifications, society bylaws, staff & audit log
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            <Pressable
               onPress={() => router.push('/about' as any)}
               style={({ pressed }) => [
                 styles.linkCard,
@@ -309,32 +369,6 @@ export default function ProfileScreen() {
                 <AppText variant="bodyBold">About CommunityPark</AppText>
                 <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
                   Mission, 4 access workflows & community guidelines
-                </AppText>
-              </View>
-              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push('/security/verify' as any)}
-              style={({ pressed }) => [
-                styles.linkCard,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  borderRadius: radius.card,
-                  padding: spacing.md,
-                  borderWidth: 1,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}
-            >
-              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
-                <AppIcon name="shield-checkmark-outline" size={22} color={colors.text} />
-              </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <AppText variant="bodyBold">Guard Scanner Portal (Demo)</AppText>
-                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
-                  Gate 2 security scanner & guard incentive log
                 </AppText>
               </View>
               <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />

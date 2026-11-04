@@ -4,11 +4,13 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/theme';
-import { useBookingStore } from '../../src/store/useBookingStore';
+import { useSecurityStore } from '../../src/store/useSecurityStore';
+import { VerificationCheck } from '../../src/types/security';
 import { AppHeader } from '../../src/components/ui/AppHeader';
 import { AppText } from '../../src/components/ui/AppText';
 import { AppIcon } from '../../src/components/ui/AppIcon';
@@ -21,30 +23,47 @@ export default function SecurityVerifyScreen() {
   const router = useRouter();
   const { colors, spacing, radius, isDark } = useTheme();
 
-  const activeBooking = useBookingStore((s) => s.activeBooking);
+  const {
+    guard,
+    incentiveStats,
+    runVerificationScenario,
+  } = useSecurityStore();
 
-  const [scanStatus, setScanStatus] = useState<'idle' | 'scanning' | 'verified' | 'denied'>('idle');
-  const [incentiveEarned, setIncentiveEarned] = useState(0);
+  const [isScanning, setIsScanning] = useState(false);
+  const [activeCheck, setActiveCheck] = useState<VerificationCheck | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<
+    'valid' | 'expired' | 'cancelled' | 'plate_mismatch' | 'duplicate' | 'unapproved'
+  >('valid');
 
-  const handleSimulateScan = () => {
-    setScanStatus('scanning');
+  const executeScan = (
+    scenario:
+      | 'valid'
+      | 'expired'
+      | 'cancelled'
+      | 'plate_mismatch'
+      | 'duplicate'
+      | 'unapproved'
+  ) => {
+    setSelectedScenario(scenario);
+    setIsScanning(true);
+    setActiveCheck(null);
+
     setTimeout(() => {
-      setScanStatus('verified');
-      setIncentiveEarned((prev) => prev + 15);
-    }, 800);
+      setIsScanning(false);
+      const res = runVerificationScenario(scenario);
+      setActiveCheck(res);
+    }, 700);
   };
 
-  const handleResetScan = () => {
-    setScanStatus('idle');
-  };
+  const isApproved = activeCheck?.result === 'approved';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <AppHeader
-        title="Security Guard Verification"
-        subtitle="Gate 2 Residential Access Scanner"
+        title="Gate Security Scanner"
+        subtitle={`${guard.gateNumber} • ${guard.name}`}
         showBack
-        onBack={() => router.replace('/(tabs)/profile' as any)}
+        onBack={() => router.replace('/security' as any)}
       />
 
       <ScrollView
@@ -57,216 +76,253 @@ export default function SecurityVerifyScreen() {
           },
         ]}
       >
-        {/* Security Guard On-Duty Badge Banner */}
+        {/* Prototype Disclaimer Banner */}
         <View
           style={[
-            styles.guardBanner,
+            styles.demoBanner,
             {
-              backgroundColor: colors.pricePinBg,
-              borderColor: colors.primary,
-              borderRadius: radius.card,
-              padding: spacing.md,
+              backgroundColor: 'rgba(234, 179, 8, 0.12)',
+              borderColor: colors.warning,
+              borderRadius: radius.md,
+              padding: spacing.sm,
             },
           ]}
         >
-          <View style={styles.guardBannerRow}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={[styles.dutyDot, { backgroundColor: colors.primary }]} />
-              <AppText variant="captionSmall" weight="bold" color={colors.primary}>
-                GUARD ON DUTY • GREENWOOD HEIGHTS
-              </AppText>
-            </View>
-            <AppBadge label="AUTHORIZED" variant="primary" size="sm" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <AppIcon name="shield-checkmark" size={16} color={colors.warning} />
+            <AppText variant="captionSmall" weight="bold" color={colors.warning}>
+              SIMULATED SCANNER SANDBOX
+            </AppText>
           </View>
-
-          <View style={[styles.guardStatsRow, { marginTop: spacing.sm }]}>
-            <View>
-              <AppText variant="captionSmall" color={colors.secondaryText}>
-                Shift Verifications
-              </AppText>
-              <AppText variant="h3" color={colors.pricePinText}>
-                12 Vehicles
-              </AppText>
-            </View>
-            <View>
-              <AppText variant="captionSmall" color={colors.secondaryText}>
-                Earned Shift Incentive
-              </AppText>
-              <AppText variant="h3" color={colors.primary}>
-                +₹{(180 + incentiveEarned).toFixed(2)}
-              </AppText>
-            </View>
-          </View>
+          <AppText variant="captionSmall" color={colors.warning} style={{ marginTop: 2 }}>
+            Simulates optical QR reading, license plate matching, booking window validity, and community authorization checks.
+          </AppText>
         </View>
 
-        {/* Simulated Camera Viewfinder */}
-        <View style={{ marginTop: spacing.lg }}>
+        {/* Viewfinder Presentation Box */}
+        <View style={{ marginTop: spacing.md }}>
           <View
             style={[
               styles.viewfinder,
               {
-                backgroundColor: isDark ? '#000000' : '#171A18',
+                backgroundColor: isDark ? '#0C0E0D' : '#171A18',
                 borderRadius: radius.card,
-                borderColor: scanStatus === 'verified' ? colors.success : colors.border,
+                borderColor: activeCheck
+                  ? isApproved
+                    ? colors.success
+                    : colors.error
+                  : colors.border,
               },
             ]}
           >
-            {/* Viewfinder Corner Reticles */}
+            {/* Reticles */}
             <View style={[styles.reticleTopLeft, { borderColor: colors.primary }]} />
             <View style={[styles.reticleTopRight, { borderColor: colors.primary }]} />
             <View style={[styles.reticleBottomLeft, { borderColor: colors.primary }]} />
             <View style={[styles.reticleBottomRight, { borderColor: colors.primary }]} />
 
-            {/* Scanning Line Indicator */}
-            {scanStatus === 'scanning' ? (
-              <View style={[styles.scanningLine, { backgroundColor: colors.primary }]} />
-            ) : scanStatus === 'verified' ? (
-              <View style={styles.verifiedOverlay}>
-                <AppIcon name="checkmark-circle" size={54} color={colors.success} />
-                <AppText variant="h3" color="#FFFFFF" style={{ marginTop: 8 }}>
-                  PASS VALIDATED
+            {/* Viewfinder Content */}
+            {isScanning ? (
+              <View style={styles.scanningBox}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <AppText variant="bodyBold" color={colors.primary} style={{ marginTop: 12 }}>
+                  Inspecting Booking QR Token...
+                </AppText>
+                <AppText variant="captionSmall" color="#A0AAA1" style={{ marginTop: 2 }}>
+                  Validating with Society Gate Registry
+                </AppText>
+              </View>
+            ) : activeCheck ? (
+              <View style={styles.resultBox}>
+                <AppIcon
+                  name={isApproved ? 'checkmark-circle' : 'close-circle'}
+                  size={54}
+                  color={isApproved ? colors.success : colors.error}
+                />
+                <AppText
+                  variant="h3"
+                  weight="extraBold"
+                  color={isApproved ? colors.success : colors.error}
+                  style={{ marginTop: 8 }}
+                >
+                  {activeCheck.statusLabel}
+                </AppText>
+                <AppText variant="captionSmall" color="#FFFFFF" align="center" style={{ marginTop: 4, maxWidth: 260 }}>
+                  {activeCheck.notes}
                 </AppText>
               </View>
             ) : (
-              <View style={styles.scannerPrompt}>
-                <AppIcon name="qr-code-outline" size={48} color="rgba(255, 255, 255, 0.4)" />
-                <AppText variant="caption" color="rgba(255, 255, 255, 0.6)" align="center" style={{ marginTop: 8 }}>
-                  Point camera at customer's CommunityPark pass QR code
+              <View style={styles.idleBox}>
+                <AppIcon name="qr-code-outline" size={54} color={colors.primary} />
+                <AppText variant="bodyBold" color="#FFFFFF" style={{ marginTop: 8 }}>
+                  Point at Driver Booking QR
+                </AppText>
+                <AppText variant="captionSmall" color="#A0AAA1" align="center" style={{ marginTop: 2 }}>
+                  Select a test scenario below to simulate gate check-in
                 </AppText>
               </View>
             )}
           </View>
         </View>
 
-        {/* Scan Actions */}
-        <View style={{ marginTop: spacing.lg }}>
-          {scanStatus === 'idle' ? (
+        {/* Verification Scenario Buttons */}
+        <View style={{ marginTop: spacing.xl }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <AppText variant="h3">Simulate Verification Scenarios</AppText>
+            <AppBadge label="TEST SANDBOX" variant="default" size="sm" />
+          </View>
+          <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+            Trigger real-world residential gate test cases:
+          </AppText>
+
+          <View style={{ marginTop: spacing.sm, gap: 8 }}>
+            {/* Scenario 1: Valid Booking */}
             <AppButton
-              title="Simulate Customer QR Scan"
-              onPress={handleSimulateScan}
-              variant="primary"
-              size="lg"
-              leftIcon={<AppIcon name="scan" size={20} color={colors.primaryForeground} />}
+              title="✓ Test Valid Booking (KA 01 MJ 4821) — Approve (+₹15)"
+              onPress={() => executeScan('valid')}
+              variant={selectedScenario === 'valid' && activeCheck ? 'primary' : 'secondary'}
+              size="md"
+              leftIcon={<AppIcon name="checkmark-circle-outline" size={18} color={selectedScenario === 'valid' && activeCheck ? colors.primaryForeground : colors.text} />}
             />
-          ) : scanStatus === 'scanning' ? (
+
+            {/* Scenario 2: Plate Mismatch */}
             <AppButton
-              title="Reading QR Code..."
-              onPress={() => {}}
-              loading
-              variant="primary"
-              size="lg"
+              title="⚠ Test Vehicle Plate Mismatch — Deny"
+              onPress={() => executeScan('plate_mismatch')}
+              variant="outline"
+              size="md"
+              leftIcon={<AppIcon name="car-outline" size={18} color={colors.error} />}
             />
-          ) : (
+
+            {/* Scenario 3: Expired Pass */}
             <AppButton
-              title="Scan Next Vehicle"
-              onPress={handleResetScan}
-              variant="secondary"
-              size="lg"
-              leftIcon={<AppIcon name="refresh" size={18} color={colors.text} />}
+              title="⌛ Test Expired Pass Window — Deny"
+              onPress={() => executeScan('expired')}
+              variant="outline"
+              size="md"
+              leftIcon={<AppIcon name="time-outline" size={18} color={colors.warning} />}
             />
-          )}
+
+            {/* Scenario 4: Duplicate Check-In */}
+            <AppButton
+              title="🚫 Test Duplicate Check-In (Already Inside) — Deny"
+              onPress={() => executeScan('duplicate')}
+              variant="outline"
+              size="md"
+              leftIcon={<AppIcon name="copy-outline" size={18} color={colors.text} />}
+            />
+
+            {/* Scenario 5: Cancelled Pass */}
+            <AppButton
+              title="✕ Test Cancelled Booking — Deny"
+              onPress={() => executeScan('cancelled')}
+              variant="outline"
+              size="md"
+              leftIcon={<AppIcon name="close-circle-outline" size={18} color={colors.error} />}
+            />
+
+            {/* Scenario 6: Unapproved Apartment Bay */}
+            <AppButton
+              title="🔒 Test Unapproved Apartment Listing — Deny"
+              onPress={() => executeScan('unapproved')}
+              variant="outline"
+              size="md"
+              leftIcon={<AppIcon name="lock-closed-outline" size={18} color={colors.warning} />}
+            />
+          </View>
         </View>
 
-        {/* Verification Result Card */}
-        {scanStatus === 'verified' && activeBooking && (
-          <View style={{ marginTop: spacing.lg }}>
-            <AppCard style={{ borderColor: colors.success, borderWidth: 1.5 }}>
-              <View style={styles.resultHeader}>
-                <View style={{ flex: 1 }}>
-                  <AppBadge label="BOOKING CONFIRMED" variant="success" size="sm" />
-                  <AppText variant="h3" style={{ marginTop: 6 }}>
-                    {activeBooking.space.name}
+        {/* Detailed Result Card */}
+        {activeCheck && (
+          <View style={{ marginTop: spacing.xl }}>
+            <AppText variant="h3">Verification Inspection Log</AppText>
+            <AppCard style={{ marginTop: spacing.xs, padding: spacing.md }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>
+                    BOOKING ID
                   </AppText>
+                  <AppText variant="bodyBold">#{activeCheck.bookingNumber}</AppText>
                 </View>
-                <AppText variant="captionSmall" color={colors.secondaryText}>
-                  Slot B-14
-                </AppText>
+                <AppBadge
+                  label={activeCheck.statusLabel}
+                  variant={isApproved ? 'success' : 'error'}
+                  size="sm"
+                />
               </View>
 
-              <View
-                style={[
-                  styles.plateCheckRow,
-                  {
-                    backgroundColor: colors.surfaceSubtle,
-                    borderRadius: radius.md,
-                    padding: spacing.md,
-                    marginTop: spacing.md,
-                  },
-                ]}
-              >
+              <View style={[styles.divider, { backgroundColor: colors.borderSubtle, marginVertical: spacing.sm }]} />
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ flex: 1 }}>
                   <AppText variant="captionSmall" color={colors.secondaryText}>
-                    EXPECTED VEHICLE PLATE
+                    EXPECTED NUMBER PLATE
                   </AppText>
-                  <AppText variant="h2" weight="extraBold" style={{ letterSpacing: 1, marginTop: 2 }}>
-                    {activeBooking.vehicle.licensePlate}
+                  <AppText variant="h4" weight="bold" style={{ marginTop: 2 }}>
+                    {activeCheck.expectedPlate}
                   </AppText>
+                </View>
+
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
                   <AppText variant="captionSmall" color={colors.secondaryText}>
-                    {activeBooking.vehicle.make} {activeBooking.vehicle.model} ({activeBooking.vehicle.color})
+                    ARRIVING PLATE
                   </AppText>
-                </View>
-
-                <View style={[styles.plateMatchBadge, { backgroundColor: colors.successBackground }]}>
-                  <AppIcon name="shield-checkmark" size={18} color={colors.success} />
-                  <AppText variant="captionSmall" weight="bold" color={colors.success} style={{ marginLeft: 4 }}>
-                    MATCH
+                  <AppText
+                    variant="h4"
+                    weight="bold"
+                    color={activeCheck.expectedPlate === activeCheck.arrivingPlate ? colors.success : colors.error}
+                    style={{ marginTop: 2 }}
+                  >
+                    {activeCheck.arrivingPlate}
                   </AppText>
                 </View>
               </View>
 
-              <View
-                style={[
-                  styles.incentiveAwardNotice,
-                  {
-                    backgroundColor: 'rgba(217, 245, 66, 0.15)',
-                    borderRadius: radius.md,
-                    padding: spacing.sm,
-                    marginTop: spacing.md,
-                  },
-                ]}
-              >
-                <AppIcon name="gift-outline" size={18} color={isDark ? colors.primary : '#49570B'} />
-                <AppText variant="captionSmall" weight="semiBold" style={{ marginLeft: 6, flex: 1 }}>
-                  Verification Recorded. +₹15 incentive credited to guard wallet.
-                </AppText>
+              <View style={[styles.divider, { backgroundColor: colors.borderSubtle, marginVertical: spacing.sm }]} />
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>ASSIGNED BAY</AppText>
+                  <AppText variant="bodyBold" style={{ marginTop: 2 }}>{activeCheck.slotNumber}</AppText>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>{activeCheck.spaceName}</AppText>
+                </View>
+
+                <View style={{ alignItems: 'flex-end' }}>
+                  <AppText variant="captionSmall" color={colors.secondaryText}>GUARD INCENTIVE</AppText>
+                  <AppText
+                    variant="h3"
+                    color={isApproved ? colors.success : colors.secondaryText}
+                    style={{ marginTop: 2 }}
+                  >
+                    {isApproved ? `+₹${activeCheck.incentiveCredited}.00` : '₹0.00'}
+                  </AppText>
+                </View>
               </View>
+
+              {isApproved && (
+                <View
+                  style={[
+                    styles.incentiveNotice,
+                    {
+                      backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                      borderColor: colors.success,
+                      borderRadius: radius.sm,
+                      padding: spacing.sm,
+                      marginTop: spacing.md,
+                    },
+                  ]}
+                >
+                  <AppText variant="captionSmall" weight="bold" color={colors.success}>
+                    ✓ Operational Incentive Awarded
+                  </AppText>
+                  <AppText variant="captionSmall" color={colors.success} style={{ marginTop: 2 }}>
+                    ₹15.00 credited to Ramesh Kumar's guard shift wallet. Vehicle added to Currently Parked registry.
+                  </AppText>
+                </View>
+              )}
             </AppCard>
           </View>
         )}
-
-        {/* Expected Vehicles Today List */}
-        <View style={{ marginTop: spacing.xl }}>
-          <AppText variant="h3">Expected Authorised Vehicles</AppText>
-          <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
-            Bookings scheduled for Gate 2 entry today
-          </AppText>
-
-          <View style={{ marginTop: spacing.sm }}>
-            <AppCard style={{ marginBottom: 8, padding: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View>
-                  <AppText variant="bodyBold">Plate: KA 01 MJ 4821 (Tata Nexon EV)</AppText>
-                  <AppText variant="captionSmall" color={colors.secondaryText}>
-                    Slot B-14 • Host: Karthik Ramanathan
-                  </AppText>
-                </View>
-                <AppBadge label="ARRIVED" variant="success" size="sm" />
-              </View>
-            </AppCard>
-
-            <AppCard style={{ marginBottom: 8, padding: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View>
-                  <AppText variant="bodyBold">Plate: KA 05 NE 3319 (Hyundai Creta)</AppText>
-                  <AppText variant="captionSmall" color={colors.secondaryText}>
-                    Slot A-08 • Expected 8:30 PM
-                  </AppText>
-                </View>
-                <AppBadge label="PENDING" variant="default" size="sm" />
-              </View>
-            </AppCard>
-          </View>
-        </View>
       </ScrollView>
     </View>
   );
@@ -279,23 +335,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-  guardBanner: {
-    borderWidth: 1.5,
-  },
-  guardBannerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dutyDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  guardStatsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  demoBanner: {
+    borderWidth: 1,
   },
   viewfinder: {
     height: 220,
@@ -341,37 +382,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderRightWidth: 3,
   },
-  scanningLine: {
-    position: 'absolute',
-    width: '80%',
-    height: 2,
-  },
-  verifiedOverlay: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scannerPrompt: {
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  plateCheckRow: {
-    flexDirection: 'row',
+  scanningBox: {
     alignItems: 'center',
   },
-  plateMatchBadge: {
-    flexDirection: 'row',
+  resultBox: {
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 20,
   },
-  incentiveAwardNotice: {
-    flexDirection: 'row',
+  idleBox: {
     alignItems: 'center',
+  },
+  divider: {
+    height: 1,
+  },
+  incentiveNotice: {
+    borderWidth: 1,
   },
 });
