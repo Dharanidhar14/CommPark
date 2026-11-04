@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
@@ -15,13 +15,15 @@ import { AppText } from '../../src/components/ui/AppText';
 import { AppIcon, IconName } from '../../src/components/ui/AppIcon';
 import { AppCard } from '../../src/components/ui/AppCard';
 import { AppBadge } from '../../src/components/ui/AppBadge';
+import { AddVehicleModal } from '../../src/components/booking/AddVehicleModal';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { colors, spacing, radius, mode, setMode, isDark } = useTheme();
 
-  const { user, switchRole, vehicles } = useAuthStore();
+  const { user, switchRole, vehicles, addVehicle } = useAuthStore();
+  const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
 
   const handleRoleChange = (role: UserRole) => {
     switchRole(role);
@@ -218,9 +220,11 @@ export default function ProfileScreen() {
         <View style={{ marginTop: spacing.xl }}>
           <View style={styles.sectionHeader}>
             <AppText variant="h3">Registered Vehicles</AppText>
-            <AppText variant="caption" weight="bold" color={isDark ? colors.primary : '#49570B'}>
-              + Add Vehicle
-            </AppText>
+            <Pressable onPress={() => setIsAddVehicleOpen(true)} hitSlop={8}>
+              <AppText variant="caption" weight="bold" color={isDark ? colors.primary : '#49570B'}>
+                + Add Vehicle
+              </AppText>
+            </Pressable>
           </View>
 
           <View style={{ marginTop: spacing.sm }}>
@@ -253,7 +257,74 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
+
+        {/* About CommunityPark & Quick Links */}
+        <View style={{ marginTop: spacing.xl }}>
+          <AppText variant="h3">Information & Resources</AppText>
+          <View style={{ marginTop: spacing.sm, gap: 10 }}>
+            <Pressable
+              onPress={() => router.push('/about' as any)}
+              style={({ pressed }) => [
+                styles.linkCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="information-circle-outline" size={22} color={isDark ? colors.primary : '#49570B'} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">About CommunityPark</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Mission, 4 access workflows & community guidelines
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/security/verify' as any)}
+              style={({ pressed }) => [
+                styles.linkCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.linkIconCircle, { backgroundColor: colors.surfaceSubtle }]}>
+                <AppIcon name="shield-checkmark-outline" size={22} color={colors.text} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="bodyBold">Guard Scanner Portal (Demo)</AppText>
+                <AppText variant="captionSmall" color={colors.secondaryText} style={{ marginTop: 2 }}>
+                  Gate 2 security scanner & guard incentive log
+                </AppText>
+              </View>
+              <AppIcon name="chevron-forward" size={18} color={colors.secondaryText} />
+            </Pressable>
+          </View>
+        </View>
       </ScrollView>
+
+      {/* Add Vehicle Modal */}
+      <AddVehicleModal
+        visible={isAddVehicleOpen}
+        onClose={() => setIsAddVehicleOpen(false)}
+        onVehicleAdded={(veh) => {
+          addVehicle(veh);
+        }}
+      />
     </View>
   );
 }
@@ -305,6 +376,17 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  linkCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  linkIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
