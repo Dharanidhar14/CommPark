@@ -159,5 +159,54 @@
 ---
 
 ## Upcoming Milestones
-- [ ] **Milestone 6: Real Backend & Authentication Integration**
+- [x] **Milestone 6: Backend Foundation, Database Architecture & Frontend Integration (Task 06 - Completed)**
+  - [x] **Backend Infrastructure & Setup**:
+    - [x] Production-ready Node.js, Express, TypeScript backend created in `backend/`.
+    - [x] Dockerfile and `docker-compose.yml` for containerized deployment with PostgreSQL.
+    - [x] Environment configuration with Zod validation (`backend/src/config/env.ts`).
+    - [x] Structured logger utility with timestamped outputs (`backend/src/config/logger.ts`).
+    - [x] Dual-mode database architecture: In-Memory repository fallback with realistic Bengaluru demo seeds for zero-setup local dev, and PostgreSQL via Prisma ORM for production.
+  - [x] **Database Schema & Prisma ORM**:
+    - [x] 17 complete Prisma models in `backend/prisma/schema.prisma` with standard PostgreSQL types, exact `Decimal(10, 2)` monetary representations, and indexes:
+      - `User`, `Role`, `Vehicle`, `Community`, `CommunityMembership`, `ParkingListing`, `ParkingImage`, `CommunityApproval`, `Booking`, `BookingStatusHistory`, `Wallet`, `WalletTransaction`, `SecurityVerification`, `Notification`, `Review`, `SupportTicket`, `AuditLog`.
+    - [x] Generated Prisma Client (`@prisma/client`).
+  - [x] **Decoupled Repositories & Storage Providers**:
+    - [x] 10 Repository interfaces in `backend/src/repositories/` (`IUserRepository`, `IVehicleRepository`, `IParkingRepository`, `IBookingRepository`, `IWalletRepository`, `ICommunityRepository`, `ISecurityRepository`, `IReviewRepository`, `ISupportRepository`, `IAuditRepository`).
+    - [x] 10 In-Memory repository implementations with standard Bengaluru seed data.
+    - [x] 10 Prisma PostgreSQL repository implementations.
+    - [x] Provider-independent storage interfaces and adapters in `backend/src/storage/` (`LocalStorageService`, `S3StorageService`).
+  - [x] **Business Logic & Service Layer**:
+    - [x] `auth.service.ts`: JWT token signing, verification, and bcrypt password hashing under `IAuthService` abstraction.
+    - [x] `parking.service.ts`: Search, filtering, residential RWA approval gating, and owner listing management.
+    - [x] `booking.service.ts`: Atomic overlap check for double-booking prevention, server-authoritative pricing (`subtotal = pricePerHour * durationHours`, `serviceFee = 15.00`), RWA approval enforcement, and cancellation refund processing.
+    - [x] `wallet.service.ts`: Double-entry transaction ledger, balance debit/credit, owner rental payouts, and security guard rewards.
+    - [x] `security.service.ts`: QR pass inspection, vehicle plate match verification, and ₹15 guard incentive credit.
+    - [x] `community.service.ts`: RWA listing approval/rejection and audit logging.
+    - [x] `review.service.ts`: Completed-booking validation, duplicate review prevention, and rating aggregation.
+    - [x] `support.service.ts`: Customer dispute ticketing and status updates.
+    - [x] `vehicle.service.ts`: Vehicle management with active-reservation deletion safeguard.
+  - [x] **Versioned REST API & Middleware**:
+    - [x] Versioned endpoints mounted at `/api/v1` (`/auth`, `/users`, `/vehicles`, `/parking`, `/bookings`, `/wallet`, `/communities`, `/security`, `/reviews`, `/support`, `/health`).
+    - [x] Request validation via Zod schemas (`validateBody`, `validateQuery`).
+    - [x] JWT authentication middleware and role-based access control (`requireRoles`).
+    - [x] Centralized error handler with standard HTTP status codes (400, 401, 403, 404, 409, 500).
+  - [x] **Automated Test Suite**:
+    - [x] 100% passing tests (16/16 tests across 4 test suites):
+      - `tests/auth.test.ts`: Registration, duplicate prevention, login, 401 on invalid credentials, profile fetching.
+      - `tests/booking.test.ts`: Server-side pricing, overlap concurrency check, unapproved space rejection, cancellation refund.
+      - `tests/wallet.test.ts`: Initial zero balance, top-up credit, negative amount validation, transaction ledger.
+      - `tests/security.test.ts`: Plate verification, ₹15 guard incentive, mismatch denial, exit completion.
+  - [x] **Frontend API Integration**:
+    - [x] Mobile API client in `src/services/api/` (`client.ts`, `auth.api.ts`, `parking.api.ts`, `bookings.api.ts`, `wallet.api.ts`, `vehicles.api.ts`, `security.api.ts`).
+    - [x] Resilient offline-first handling: seamless fallback to local mock stores when backend server is unavailable.
+  - [x] **Supabase Migration Blueprint**:
+    - [x] Comprehensive migration guide authored in `docs/SUPABASE_MIGRATION.md` detailing PostgreSQL schema push, Row Level Security (RLS) policies, Auth migration, Storage buckets, and Realtime channels.
+  - [x] **Verification & Quality Checks**:
+    - [x] Backend TypeScript compilation: `cd backend; npx tsc --noEmit` (0 errors).
+    - [x] Frontend TypeScript compilation: `npm run ts:check` (0 errors).
+    - [x] Google Sans typography integrity verified: 0 regressions to Manrope or Inter.
+
+---
+
+## Upcoming Milestones
 - [ ] **Milestone 7: End-to-End Testing & Production Release**

@@ -1,0 +1,495 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// ENUMS
+// -------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  OWNER
+  SECURITY
+  COMMUNITY_ADMIN
+}
+
+enum VehicleCategory {
+  SEDAN
+  SUV
+  EV
+  HATCHBACK
+  MOTORCYCLE
+  VAN
+}
+
+enum ParkingCategoryType {
+  RESIDENTIAL
+  DRIVEWAY
+  STREET_BAY
+  COMMERCIAL
+}
+
+enum AccessMethod {
+  SECURITY_VERIFIED
+  OWNER_ASSISTED
+  DIRECT_ACCESS
+  FACILITY_MANAGED
+}
+
+enum ListingApprovalStatus {
+  SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum BookingStatusEnum {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionTypeEnum {
+  PARKING_PAYMENT
+  PARKING_REFUND
+  OWNER_EARNING
+  GUARD_INCENTIVE
+  PROMO_CREDIT
+  WALLET_TOPUP
+}
+
+enum TransactionStatusEnum {
+  COMPLETED
+  PENDING
+  FAILED
+}
+
+enum VerificationResultEnum {
+  APPROVED
+  DENIED
+  EXIT_RECORDED
+}
+
+enum NotificationCategoryEnum {
+  BOOKING
+  PAYMENT
+  REMINDER
+  OWNER
+  APPROVAL
+  SECURITY
+  PROMOTIONAL
+}
+
+enum TicketCategoryEnum {
+  ACCESS_PROBLEM
+  SPACE_UNAVAILABLE
+  PAYMENT_ISSUE
+  BOOKING_ISSUE
+  INCORRECT_LISTING
+  DISPUTE
+  SAFETY_CONCERN
+  OTHER
+}
+
+enum TicketStatusEnum {
+  SUBMITTED
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum AuditActionEnum {
+  LISTING_APPROVED
+  LISTING_REJECTED
+  STAFF_AUTHORIZED
+  STAFF_SUSPENDED
+  POLICY_UPDATED
+  SECURITY_ALERT
+  GUEST_ENTRY_LOGGED
+}
+
+// -------------------------------------------------------------
+// MODELS
+// -------------------------------------------------------------
+
+model User {
+  id                 String           @id @default(uuid())
+  email              String           @unique
+  passwordHash       String
+  name               String
+  phone              String
+  avatarUrl          String?
+  activeRole         Role             @default(CUSTOMER)
+  eligibleRoles      Role[]           @default([CUSTOMER])
+  city               String           @default("Bengaluru")
+  verificationStatus String           @default("verified")
+  memberSince        String           @default("October 2024")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  // Relationships
+  vehicles           Vehicle[]
+  listings           ParkingListing[] @relation("OwnerListings")
+  bookings           Booking[]        @relation("CustomerBookings")
+  wallet             Wallet?
+  reviews            Review[]
+  supportTickets     SupportTicket[]
+  notifications      Notification[]
+  communityMembers   CommunityMembership[]
+  verificationsDone  SecurityVerification[] @relation("GuardVerifications")
+  approvalsHandled   CommunityApproval[]    @relation("AdminApprovals")
+  statusChanges      BookingStatusHistory[] @relation("ChangedBy")
+
+  @@index([email])
+}
+
+model Vehicle {
+  id           String          @id @default(uuid())
+  userId       String
+  licensePlate String          @unique
+  make         String
+  model        String
+  color        String
+  type         VehicleCategory @default(SEDAN)
+  isDefault    Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relationships
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings     Booking[]
+
+  @@index([userId])
+  @@index([licensePlate])
+}
+
+model Community {
+  id                    String                @id @default(uuid())
+  name                  String
+  locality              String
+  city                  String
+  totalResidentialUnits Int                   @default(140)
+  totalRegisteredBays   Int                   @default(18)
+  rwaRegistrationNumber String                @unique
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  // Relationships
+  members               CommunityMembership[]
+  listings              ParkingListing[]
+  approvals             CommunityApproval[]
+
+  @@index([locality, city])
+}
+
+model CommunityMembership {
+  id               String    @id @default(uuid())
+  communityId      String
+  userId           String
+  role             String    @default("RESIDENT") // RESIDENT, SECURITY_STAFF, COMMITTEE_MEMBER
+  unitOrFlatNumber String?
+  assignedGate     String?
+  isAuthorized     Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relationships
+  community        Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@index([communityId])
+  @@index([userId])
+}
+
+model ParkingListing {
+  id                  String                @id @default(uuid())
+  ownerId             String
+  name                String
+  description         String
+  address             String
+  locality            String
+  neighborhood        String?
+  city                String
+  state               String                @default("Karnataka")
+  postalCode          String
+  latitude            Float
+  longitude           Float
+  category            ParkingCategoryType   @default(RESIDENTIAL)
+  accessType          AccessMethod          @default(SECURITY_VERIFIED)
+  pricePerHour        Decimal               @db.Decimal(10, 2)
+  pricePerDay         Decimal               @db.Decimal(10, 2)
+  currency            String                @default("₹")
+  isCovered           Boolean               @default(false)
+  supportedVehicles   VehicleCategory[]
+  amenities           String[]
+  isAvailable         Boolean               @default(true)
+  totalSpots          Int                   @default(1)
+  availableSpots      Int                   @default(1)
+  approvalStatus      ListingApprovalStatus @default(SUBMITTED)
+  communityId         String?
+  unitNumber          String?
+  slotNumber          String?
+  accessInstructions  String?
+  securityGuardOnSite Boolean               @default(false)
+  operatingHours      String                @default("24/7 Access")
+  rating              Float                 @default(5.0)
+  reviewCount         Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  // Relationships
+  owner               User                  @relation("OwnerListings", fields: [ownerId], references: [id], onDelete: Cascade)
+  community           Community?            @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  images              ParkingImage[]
+  approvals           CommunityApproval[]
+  bookings            Booking[]
+  reviews             Review[]
+
+  @@index([ownerId])
+  @@index([locality, city])
+  @@index([approvalStatus])
+  @@index([communityId])
+}
+
+model ParkingImage {
+  id           String         @id @default(uuid())
+  listingId    String
+  imageUrl     String
+  displayOrder Int            @default(0)
+  createdAt    DateTime       @default(now())
+
+  // Relationships
+  listing      ParkingListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+}
+
+model CommunityApproval {
+  id              String                @id @default(uuid())
+  listingId       String
+  communityId     String
+  status          ListingApprovalStatus @default(PENDING_APPROVAL)
+  reviewedById    String?
+  rejectionReason String?
+  submittedAt     DateTime              @default(now())
+  approvedAt      DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  // Relationships
+  listing         ParkingListing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  community       Community             @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  reviewedBy      User?                 @relation("AdminApprovals", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([listingId])
+  @@index([communityId])
+  @@index([status])
+}
+
+model Booking {
+  id                  String                 @id @default(uuid())
+  bookingNumber       String                 @unique
+  listingId           String
+  customerId          String
+  vehicleId           String
+  bookingDate         String
+  startTime           DateTime
+  endTime             DateTime
+  durationHours       Float
+  accessType          AccessMethod
+  subtotal            Decimal                @db.Decimal(10, 2)
+  serviceFee          Decimal                @default(15.00) @db.Decimal(10, 2)
+  totalAmount         Decimal                @db.Decimal(10, 2)
+  currency            String                 @default("₹")
+  status              BookingStatusEnum      @default(ACTIVE)
+  paymentMethod       String                 @default("wallet")
+  qrCodeToken         String                 @unique
+  accessCode          String?
+  specialInstructions String?
+  isDemoData          Boolean                @default(true)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  // Relationships
+  listing             ParkingListing         @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  customer            User                   @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Restrict)
+  vehicle             Vehicle                @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  verifications       SecurityVerification[]
+  statusHistory       BookingStatusHistory[]
+  review              Review?
+
+  @@index([customerId])
+  @@index([listingId])
+  @@index([vehicleId])
+  @@index([status])
+  @@index([startTime, endTime])
+}
+
+model BookingStatusHistory {
+  id          String            @id @default(uuid())
+  bookingId   String
+  fromStatus  BookingStatusEnum
+  toStatus    BookingStatusEnum
+  reason      String?
+  changedById String?
+  createdAt   DateTime          @default(now())
+
+  // Relationships
+  booking     Booking           @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  changedBy   User?             @relation("ChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+}
+
+model Wallet {
+  id                 String              @id @default(uuid())
+  userId             String              @unique
+  availableBalance   Decimal             @default(0.00) @db.Decimal(10, 2)
+  earnedAsOwner      Decimal             @default(0.00) @db.Decimal(10, 2)
+  earnedAsGuard      Decimal             @default(0.00) @db.Decimal(10, 2)
+  pendingCredits     Decimal             @default(0.00) @db.Decimal(10, 2)
+  currency           String              @default("₹")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  // Relationships
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions       WalletTransaction[]
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id                String                @id @default(uuid())
+  walletId          String
+  txNumber          String                @unique
+  type              TransactionTypeEnum
+  title             String
+  amount            Decimal               @db.Decimal(10, 2)
+  status            TransactionStatusEnum @default(COMPLETED)
+  category          String
+  relatedBookingId  String?
+  paymentMethodUsed String?
+  referenceNumber   String
+  note              String?
+  isDemo            Boolean               @default(true)
+  createdAt         DateTime              @default(now())
+
+  // Relationships
+  wallet            Wallet                @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([type])
+  @@index([txNumber])
+}
+
+model SecurityVerification {
+  id                   String                 @id @default(uuid())
+  bookingId            String
+  guardId              String
+  gateNumber           String                 @default("Gate 2")
+  verifiedAt           DateTime               @default(now())
+  licensePlateMatches  Boolean                @default(true)
+  result               VerificationResultEnum @default(APPROVED)
+  failureReason        String?
+  guardIncentiveAmount Decimal                @default(15.00) @db.Decimal(10, 2)
+  createdAt            DateTime               @default(now())
+
+  // Relationships
+  booking              Booking                @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  guard                User                   @relation("GuardVerifications", fields: [guardId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId])
+  @@index([guardId])
+}
+
+model Notification {
+  id           String                   @id @default(uuid())
+  userId       String
+  title        String
+  body         String
+  category     NotificationCategoryEnum @default(BOOKING)
+  isRead       Boolean                  @default(false)
+  relatedRoute String?
+  relatedId    String?
+  isDemoData   Boolean                  @default(true)
+  createdAt    DateTime                 @default(now())
+
+  // Relationships
+  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model Review {
+  id                    String         @id @default(uuid())
+  bookingId             String         @unique
+  listingId             String
+  userId                String
+  overallRating         Int            @default(5)
+  parkingExperience     Int            @default(5)
+  accessExperience      Int            @default(5)
+  cleanlinessSuitability Int           @default(5)
+  comment               String
+  isDemoReview          Boolean        @default(true)
+  createdAt             DateTime       @default(now())
+
+  // Relationships
+  booking               Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  listing               ParkingListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([userId])
+}
+
+model SupportTicket {
+  id                   String             @id @default(uuid())
+  ticketNumber         String             @unique
+  userId               String
+  category             TicketCategoryEnum @default(ACCESS_PROBLEM)
+  categoryLabel        String             @default("Vehicle Access Problem")
+  subject              String
+  description          String
+  relatedBookingId     String?
+  relatedBookingNumber String?
+  imageUri             String?
+  status               TicketStatusEnum   @default(SUBMITTED)
+  responseText         String?
+  resolvedAt           DateTime?
+  isDemoTicket         Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  // Relationships
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model AuditLog {
+  id                String          @id @default(uuid())
+  action            AuditActionEnum
+  actorId           String?
+  actorName         String
+  actorRole         String
+  targetId          String
+  targetDescription String
+  details           String?
+  isDemoRecord      Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+
+  @@index([action])
+  @@index([actorId])
+  @@index([createdAt])
+}

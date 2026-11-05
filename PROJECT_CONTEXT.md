@@ -9,7 +9,7 @@
 - Language: TypeScript
 - Navigation: Expo Router
 - Development environment: Google Antigravity
-- Current development stage: Milestone 5: User Account, Wallet, Notifications, Reviews & Support Completed
+- Current development stage: Milestone 6: Backend Foundation, Database Architecture & Frontend Integration Completed
 
 ## 2. Product vision
 CommunityPark is a community-driven parking marketplace that allows people to discover and book available parking spaces while enabling property owners and residents to monetize unused parking spaces.
@@ -88,3 +88,12 @@ One application and one user account supporting:
 - Security routes: `/security`, `/security/verify`.
 - Admin routes: `/admin`, `/admin/approvals`, `/admin/policies`, `/admin/staff`, `/admin/audit`.
 - Responsive container: Centered `maxWidth: 480` viewport wrapper on desktop web.
+
+## 11. Backend & Database Architecture (Task 06)
+- **Runtime & Framework**: Node.js (`v24.19.0`), Express.js, TypeScript with REST architecture under `/api/v1`.
+- **Database & ORM**: PostgreSQL with Prisma ORM (`@prisma/client@6.19.3`) and dual-mode in-memory repository fallback.
+- **17 Prisma Entities**: `User`, `Role`, `Vehicle`, `Community`, `CommunityMembership`, `ParkingListing`, `ParkingImage`, `CommunityApproval`, `Booking`, `BookingStatusHistory`, `Wallet`, `WalletTransaction`, `SecurityVerification`, `Notification`, `Review`, `SupportTicket`, `AuditLog`.
+- **Monetary Precision**: Exact `Decimal(10, 2)` monetary values across hourly pricing, subtotals, ₹15 platform service fee, host earnings, and guard incentives.
+- **Validation & Security**: Zod schemas for request validation, bcrypt password hashing, JWT authentication provider abstraction (`IAuthService`), and role-based authorisation middleware.
+- **Supabase Migration Blueprint**: Documented in `docs/SUPABASE_MIGRATION.md` (RLS policies, schema push, auth adapter, storage bucket mapping, realtime subscriptions).
+- **Frontend API Client**: Located at `src/services/api/` with automatic offline fallback to local mock stores.

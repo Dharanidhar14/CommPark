@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: commpark-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: commpark_admin
+      POSTGRES_PASSWORD: commpark_secure_pass
+      POSTGRES_DB: commpark_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U commpark_admin -d commpark_db']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # CommunityPark Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: commpark-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      DATABASE_URL: postgresql://commpark_admin:commpark_secure_pass@postgres:5432/commpark_db?schema=public
+      JWT_SECRET: dev_jwt_signing_key_replace_in_production_min_32_chars
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: '*'
+      STORAGE_PROVIDER: local
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  postgres_data:
