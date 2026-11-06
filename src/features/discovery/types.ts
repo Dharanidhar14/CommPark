@@ -3,6 +3,7 @@ import { ParkingCategory, AccessType, VehicleType } from '../../types/parking';
 export interface DiscoveryFilters {
   query?: string;
   locality?: string;
+  city?: string;
   category?: ParkingCategory | 'all';
   accessType?: AccessType | 'all';
   vehicleType?: VehicleType;
@@ -12,6 +13,13 @@ export interface DiscoveryFilters {
   coveredOnly?: boolean;
   evChargingOnly?: boolean;
   securityGuardOnly?: boolean;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  minLat?: number;
+  maxLat?: number;
+  minLng?: number;
+  maxLng?: number;
 }
 
 export type SortOption =

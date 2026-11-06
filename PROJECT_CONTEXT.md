@@ -9,7 +9,7 @@
 - Language: TypeScript
 - Navigation: Expo Router
 - Development environment: Google Antigravity
-- Current development stage: Milestone 7: Backend Security, Financial Integrity & Production Readiness Audit Completed
+- Current development stage: Milestone 8: Map Experience, Geolocation & Location Search Completed
 
 ## 2. Product vision
 CommunityPark is a community-driven parking marketplace that allows people to discover and book available parking spaces while enabling property owners and residents to monetize unused parking spaces.
@@ -51,7 +51,7 @@ One application and one user account supporting:
 - Expo managed workflow (SDK 58)
 - TypeScript (strict mode, version ~6.0.3)
 - Expo Router v4
-- Zustand for client-side state (`useThemeStore`, `useAuthStore`, `useBookingStore`, `useOwnerStore`, `useSecurityStore`, `useAdminStore`, `useWalletStore`, `useNotificationStore`, `useReviewStore`, `useSupportStore`)
+- Zustand for client-side state (`useThemeStore`, `useAuthStore`, `useBookingStore`, `useOwnerStore`, `useSecurityStore`, `useAdminStore`, `useWalletStore`, `useNotificationStore`, `useReviewStore`, `useSupportStore`, `useLocationStore`)
 - TanStack Query for server state
 - React Hook Form + Zod for form validations
 - Expo SecureStore

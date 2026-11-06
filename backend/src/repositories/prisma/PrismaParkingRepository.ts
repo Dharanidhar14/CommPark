@@ -84,8 +84,23 @@ export class PrismaParkingRepository implements IParkingRepository {
       if (filter.isCovered !== undefined) {
         where.isCovered = filter.isCovered;
       }
+      if (filter.city) {
+        where.city = { contains: filter.city, mode: 'insensitive' };
+      }
+      if (filter.minPrice !== undefined) {
+        where.pricePerHour = { ...(where.pricePerHour || {}), gte: filter.minPrice };
+      }
       if (filter.maxPrice !== undefined) {
-        where.pricePerHour = { lte: filter.maxPrice };
+        where.pricePerHour = { ...(where.pricePerHour || {}), lte: filter.maxPrice };
+      }
+      if (
+        filter.minLat !== undefined &&
+        filter.maxLat !== undefined &&
+        filter.minLng !== undefined &&
+        filter.maxLng !== undefined
+      ) {
+        where.latitude = { gte: filter.minLat, lte: filter.maxLat };
+        where.longitude = { gte: filter.minLng, lte: filter.maxLng };
       }
       if (filter.approvalStatus) {
         where.approvalStatus = filter.approvalStatus as ListingApprovalStatus;
@@ -110,7 +125,34 @@ export class PrismaParkingRepository implements IParkingRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return items.map((i) => this.mapToEntity(i));
+    let results = items.map((i) => this.mapToEntity(i));
+
+    if (filter?.latitude !== undefined && filter?.longitude !== undefined) {
+      const targetLat = filter.latitude;
+      const targetLng = filter.longitude;
+      const radius = filter.radiusKm ?? 50;
+
+      const withDistances = results.map((l) => {
+        const dLat = ((l.latitude - targetLat) * Math.PI) / 180;
+        const dLon = ((l.longitude - targetLng) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((targetLat * Math.PI) / 180) *
+            Math.cos((l.latitude * Math.PI) / 180) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distanceKm = 6371 * c;
+        return { item: l, distanceKm };
+      });
+
+      results = withDistances
+        .filter((entry) => entry.distanceKm <= radius)
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .map((entry) => entry.item);
+    }
+
+    return results;
   }
 
   async findByOwnerId(ownerId: string): Promise<ParkingListingEntity[]> {

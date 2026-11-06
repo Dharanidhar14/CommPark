@@ -57,11 +57,64 @@ export const SEARCH_SUGGESTIONS_MOCK: SearchSuggestionItem[] = [
   },
 ];
 
+function calculateDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
 export function getFilteredParkingSpaces(
   filters: DiscoveryFilters = {},
   sort: SortOption = 'recommended'
 ): ParkingSpace[] {
   let results = [...MOCK_PARKING_SPACES];
+
+  if (filters.city && filters.city !== 'all') {
+    results = results.filter((s) => s.city.toLowerCase() === filters.city?.toLowerCase());
+  }
+
+  // Geographic Radius Filter
+  if (filters.latitude !== undefined && filters.longitude !== undefined) {
+    const lat = filters.latitude;
+    const lng = filters.longitude;
+    const maxRadius = filters.radiusKm ?? 50;
+
+    results = results
+      .map((s) => {
+        const dist = calculateDistanceKm(lat, lng, s.coordinates.latitude, s.coordinates.longitude);
+        return { ...s, distanceKm: dist };
+      })
+      .filter((s) => s.distanceKm <= maxRadius);
+  }
+
+  // Bounding Box Filter
+  if (
+    filters.minLat !== undefined &&
+    filters.maxLat !== undefined &&
+    filters.minLng !== undefined &&
+    filters.maxLng !== undefined
+  ) {
+    results = results.filter(
+      (s) =>
+        s.coordinates.latitude >= filters.minLat! &&
+        s.coordinates.latitude <= filters.maxLat! &&
+        s.coordinates.longitude >= filters.minLng! &&
+        s.coordinates.longitude <= filters.maxLng!
+    );
+  }
 
   if (filters.query && filters.query.trim().length > 0) {
     const q = filters.query.toLowerCase().trim();

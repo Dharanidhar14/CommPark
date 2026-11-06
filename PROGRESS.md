@@ -254,5 +254,48 @@
 
 ---
 
+- [x] **Milestone 8 / Task 08: CommunityPark Map Experience, Geolocation & Location Search (Completed & Verified)**
+  - [x] **Provider-Independent Map Architecture**:
+    - [x] Preserved provider neutrality via `IMapProvider`, `MapCoordinate`, `MapRegion`, `MapBoundingBox`, `MapMarkerItem`, `MapSearchResult`.
+    - [x] Maintained `CommunityMapView` wrapper pointing to `SimulatedMap` for zero-refactor future Google Maps or Mapbox integration.
+    - [x] Removed hardcoded San Francisco coordinates; dynamic map centering based on live user location with neutral Bengaluru fallback (`12.9716, 77.5946`).
+    - [x] Enhanced `SimulatedMap` with dynamic coordinate projections, pan/zoom gesture responder, recenter control, and floating "Search This Area" trigger.
+  - [x] **Geolocation & Foreground Privacy Protocol**:
+    - [x] Implemented `LocationService` implementing `ILocationService` with Expo Location foreground-only checks, 60s coordinate cache TTL, and 8000ms timeout protection.
+    - [x] Implemented `useLocationStore` managing permission status, non-blocking requests, coordinate caching, and settings link.
+    - [x] Created `LocationPermissionModal` displaying privacy rationale ("foreground only, never in background") BEFORE native permission prompt.
+    - [x] Created `LocationStatusBanner` for denied/blocked states with direct retry and system settings navigation.
+  - [x] **Destination Search & Geocoding Abstraction**:
+    - [x] Implemented `GeocodingService` implementing `IGeocodingProvider`.
+    - [x] Curated offline-ready metro directory for Bengaluru and Mumbai key localities, tech corridors, and transport hubs.
+    - [x] Integrated mock parking spaces landmark search and fallback to `Location.geocodeAsync` and `Location.reverseGeocodeAsync`.
+    - [x] Wired dynamic suggestions in `ParkingSearchBar` with instant coordinate lookup on selection.
+  - [x] **Map-First Discovery & Carousel Synchronization**:
+    - [x] Upgraded `app/(tabs)/explore.tsx` with map-first discovery layout.
+    - [x] Added bidirectional synchronization between map markers and horizontal snapping bottom card carousel (`FlatList`).
+    - [x] Tapping map marker highlights pin and smoothly scrolls carousel to selected parking space.
+    - [x] Swiping carousel updates selected marker on map.
+    - [x] Integrated "Search This Area" button querying spaces in visible map bounding box/radius upon panning.
+    - [x] Preserved all filter, search, category, and sorting states across seamless Map/List view toggle.
+  - [x] **Backend Geographic Discovery API Extensions**:
+    - [x] Extended `IParkingRepository`, `MemoryParkingRepository`, and `PrismaParkingRepository` with `latitude`, `longitude`, `radiusKm`, `minLat`, `maxLat`, `minLng`, `maxLng`, `city`, and `minPrice`.
+    - [x] Implemented Haversine distance calculations and proximity sorting.
+    - [x] Added strict Zod query validation in `backend/src/routes/parking.routes.ts` rejecting invalid latitude/longitude (-90..90, -180..180) and negative/excessive radius (> 100km) with HTTP 400 Bad Request.
+    - [x] Strictly preserved community approval gating (`space_05_pending` never exposed in discovery).
+  - [x] **Automated Test Suite (51/51 Passed across 10 Test Suites)**:
+    - [x] Created `backend/tests/parking_discovery.test.ts` (6 tests):
+      - Geographic radius search near Indiranagar.
+      - Radius exclusion for distant spaces.
+      - Bounding box search filtering.
+      - HTTP 400 validation for invalid coordinates.
+      - Public exclusion of unapproved residential listings.
+      - Min/max price filtering.
+  - [x] **Static Analysis & Health Checks**:
+    - [x] Root TypeScript check: `npm run ts:check` (0 errors).
+    - [x] Backend TypeScript check: `cd backend; npx tsc --noEmit` (0 errors).
+    - [x] Expo Doctor: `npx expo-doctor` (20/20 checks passed).
+
+---
+
 ## Upcoming Milestones
-- [ ] **Milestone 8: Cloud Infrastructure Deployment & Live Supabase Integration**
+- [ ] **Milestone 9: Cloud Infrastructure Deployment & Live Supabase Integration**

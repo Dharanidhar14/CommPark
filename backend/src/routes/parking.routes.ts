@@ -40,21 +40,42 @@ const createListingSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
+const discoveryQuerySchema = z.object({
+  query: z.string().optional(),
+  locality: z.string().optional(),
+  city: z.string().optional(),
+  category: z.enum(['RESIDENTIAL', 'DRIVEWAY', 'STREET_BAY', 'COMMERCIAL']).optional(),
+  accessType: z.enum(['SECURITY_VERIFIED', 'OWNER_ASSISTED', 'DIRECT_ACCESS', 'FACILITY_MANAGED']).optional(),
+  supportedVehicle: z.enum(['SEDAN', 'SUV', 'EV', 'HATCHBACK', 'MOTORCYCLE', 'VAN']).optional(),
+  isCovered: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
+  minPrice: z.coerce.number().min(0, 'minPrice must be non-negative').optional(),
+  maxPrice: z.coerce.number().positive('maxPrice must be positive').optional(),
+  latitude: z.coerce.number().min(-90, 'Latitude must be between -90 and 90').max(90, 'Latitude must be between -90 and 90').optional(),
+  longitude: z.coerce.number().min(-180, 'Longitude must be between -180 and 180').max(180, 'Longitude must be between -180 and 180').optional(),
+  radiusKm: z.coerce.number().positive('radiusKm must be positive').max(100, 'Maximum search radius is 100km').optional(),
+  minLat: z.coerce.number().min(-90).max(90).optional(),
+  maxLat: z.coerce.number().min(-90).max(90).optional(),
+  minLng: z.coerce.number().min(-180).max(180).optional(),
+  maxLng: z.coerce.number().min(-180).max(180).optional(),
+});
+
 // Customer & Public Discovery
 router.get(
   '/',
   optionalAuthMiddleware,
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const {
-        query,
-        locality,
-        category,
-        accessType,
-        supportedVehicle,
-        isCovered,
-        maxPrice,
-      } = req.query;
+      const parsed = discoveryQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        const errorDetails = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ');
+        res.status(400).json({
+          success: false,
+          error: `Validation Error: ${errorDetails}`,
+        });
+        return;
+      }
+
+      const q = parsed.data;
 
       const isAdmin =
         req.user?.activeRole === 'COMMUNITY_ADMIN' ||
@@ -62,13 +83,22 @@ router.get(
 
       const listings = await services.parkingService.getListings(
         {
-          query: query as string,
-          locality: locality as string,
-          category: category as ParkingCategory,
-          accessType: accessType as AccessMethod,
-          supportedVehicle: supportedVehicle as VehicleCategory,
-          isCovered: isCovered !== undefined ? isCovered === 'true' : undefined,
-          maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
+          query: q.query,
+          locality: q.locality,
+          city: q.city,
+          category: q.category as ParkingCategory,
+          accessType: q.accessType as AccessMethod,
+          supportedVehicle: q.supportedVehicle as VehicleCategory,
+          isCovered: q.isCovered,
+          minPrice: q.minPrice,
+          maxPrice: q.maxPrice,
+          latitude: q.latitude,
+          longitude: q.longitude,
+          radiusKm: q.radiusKm,
+          minLat: q.minLat,
+          maxLat: q.maxLat,
+          minLng: q.minLng,
+          maxLng: q.maxLng,
           onlyAvailable: true,
         },
         Boolean(isAdmin)

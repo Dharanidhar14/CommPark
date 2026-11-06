@@ -45,11 +45,20 @@ export interface ParkingListingEntity {
 export interface ParkingFilterQuery {
   query?: string;
   locality?: string;
+  city?: string;
   category?: ParkingCategory;
   accessType?: AccessMethod;
   supportedVehicle?: VehicleCategory;
   isCovered?: boolean;
+  minPrice?: number;
   maxPrice?: number;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  minLat?: number;
+  maxLat?: number;
+  minLng?: number;
+  maxLng?: number;
   approvalStatus?: ListingApprovalStatus;
   onlyAvailable?: boolean;
 }

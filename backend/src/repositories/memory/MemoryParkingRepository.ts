@@ -61,6 +61,15 @@ export class MemoryParkingRepository implements IParkingRepository {
       result = result.filter((l) => l.isCovered === filter.isCovered);
     }
 
+    if (filter.city) {
+      const city = filter.city.toLowerCase().trim();
+      result = result.filter((l) => l.city.toLowerCase().includes(city));
+    }
+
+    if (filter.minPrice !== undefined) {
+      result = result.filter((l) => l.pricePerHour >= filter.minPrice!);
+    }
+
     if (filter.maxPrice !== undefined) {
       result = result.filter((l) => l.pricePerHour <= filter.maxPrice!);
     }
@@ -71,6 +80,48 @@ export class MemoryParkingRepository implements IParkingRepository {
 
     if (filter.onlyAvailable) {
       result = result.filter((l) => l.isAvailable && l.availableSpots > 0);
+    }
+
+    // Bounding Box Filter
+    if (
+      filter.minLat !== undefined &&
+      filter.maxLat !== undefined &&
+      filter.minLng !== undefined &&
+      filter.maxLng !== undefined
+    ) {
+      result = result.filter(
+        (l) =>
+          l.latitude >= filter.minLat! &&
+          l.latitude <= filter.maxLat! &&
+          l.longitude >= filter.minLng! &&
+          l.longitude <= filter.maxLng!
+      );
+    }
+
+    // Radius / Proximity Filter using Haversine
+    if (filter.latitude !== undefined && filter.longitude !== undefined) {
+      const targetLat = filter.latitude;
+      const targetLng = filter.longitude;
+      const radius = filter.radiusKm ?? 50; // default 50km max if lat/lng specified
+
+      const withDistances = result.map((l) => {
+        const dLat = ((l.latitude - targetLat) * Math.PI) / 180;
+        const dLon = ((l.longitude - targetLng) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((targetLat * Math.PI) / 180) *
+            Math.cos((l.latitude * Math.PI) / 180) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distanceKm = 6371 * c;
+        return { item: l, distanceKm };
+      });
+
+      result = withDistances
+        .filter((entry) => entry.distanceKm <= radius)
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .map((entry) => entry.item);
     }
 
     return result.map((l) => ({ ...l }));
