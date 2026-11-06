@@ -43,16 +43,19 @@ router.get(
   }
 );
 
-// Wallet Top-up
+// Wallet Top-up with Idempotency Key Support
 router.post(
   '/topup',
   validateBody(topUpSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const idempotencyKey =
+        (req.headers['idempotency-key'] as string) || req.body.idempotencyKey;
       const result = await services.walletService.topUp(
         req.user!.id,
         req.body.amount,
-        req.body.paymentMethod
+        req.body.paymentMethod,
+        idempotencyKey
       );
       res.json({
         success: true,

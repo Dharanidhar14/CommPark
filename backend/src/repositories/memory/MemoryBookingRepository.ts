@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {
   IBookingRepository,
   BookingEntity,
@@ -7,6 +8,7 @@ import {
 
 export class MemoryBookingRepository implements IBookingRepository {
   private bookings: Map<string, BookingEntity> = new Map();
+  private listingLocks: Map<string, Promise<void>> = new Map();
 
   constructor(initialBookings: BookingEntity[] = []) {
     for (const b of initialBookings) {
@@ -73,49 +75,88 @@ export class MemoryBookingRepository implements IBookingRepository {
   }
 
   async create(data: CreateBookingData): Promise<BookingEntity> {
-    const id = `bk_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const randomHex = Math.floor(1000 + Math.random() * 9000).toString();
-    const bookingNumber = `CP-BLR-${new Date().getFullYear()}-${randomHex}`;
-    const qrCodeToken = `CP-PASS-BLR-${randomHex}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    // Acquire sequential lock for this listing to serialize concurrent reservations
+    let releaseLock: () => void = () => {};
+    const currentLock = this.listingLocks.get(data.listingId) || Promise.resolve();
+    const newLock = new Promise<void>((resolve) => {
+      releaseLock = resolve;
+    });
+    this.listingLocks.set(data.listingId, newLock);
 
-    const now = new Date();
-    const booking: BookingEntity = {
-      id,
-      bookingNumber,
-      listingId: data.listingId,
-      customerId: data.customerId,
-      vehicleId: data.vehicleId,
-      bookingDate: data.bookingDate,
-      startTime: data.startTime,
-      endTime: data.endTime,
-      durationHours: data.durationHours,
-      accessType: data.accessType,
-      subtotal: data.subtotal,
-      serviceFee: data.serviceFee,
-      totalAmount: data.totalAmount,
-      currency: data.currency || '₹',
-      status: 'UPCOMING',
-      paymentMethod: data.paymentMethod || 'CommunityPark Wallet',
-      qrCodeToken,
-      accessCode: data.accessCode || `AC-${randomHex.substring(0, 4)}`,
-      specialInstructions: data.specialInstructions || null,
-      isDemoData: false,
-      createdAt: now,
-      updatedAt: now,
-    };
+    try {
+      await currentLock;
 
-    this.bookings.set(id, booking);
-    return { ...booking };
+      // ATOMIC CONCURRENCY CHECK
+      const overlaps = await this.checkOverlappingBookings(
+        data.listingId,
+        new Date(data.startTime),
+        new Date(data.endTime)
+      );
+
+      if (overlaps.length > 0) {
+        throw new Error(
+          'This parking space is already reserved for the selected time window. Please choose another slot.'
+        );
+      }
+
+      const id = `bk_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+      const randomHex = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const bookingNumber = `CP-BLR-${new Date().getFullYear()}-${randomHex}`;
+      const secureQrToken = `CP-PASS-BLR-${crypto.randomBytes(16).toString('hex').toUpperCase()}`;
+
+      const now = new Date();
+      const booking: BookingEntity = {
+        id,
+        bookingNumber,
+        listingId: data.listingId,
+        customerId: data.customerId,
+        vehicleId: data.vehicleId,
+        bookingDate: data.bookingDate,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        durationHours: data.durationHours,
+        accessType: data.accessType,
+        subtotal: data.subtotal,
+        serviceFee: data.serviceFee,
+        totalAmount: data.totalAmount,
+        currency: data.currency || '₹',
+        status: 'UPCOMING',
+        paymentMethod: data.paymentMethod || 'CommunityPark Wallet',
+        qrCodeToken: secureQrToken,
+        accessCode: data.accessCode || `AC-${randomHex}`,
+        specialInstructions: data.specialInstructions || null,
+        isDemoData: false,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      this.bookings.set(id, booking);
+      return { ...booking };
+    } finally {
+      releaseLock();
+    }
   }
 
   async updateStatus(
     id: string,
     status: BookingStatus,
-    _reason?: string,
-    _changedById?: string
+    reason?: string,
+    changedById?: string
   ): Promise<BookingEntity | null> {
     const existing = this.bookings.get(id);
     if (!existing) return null;
+
+    // Validate state machine transitions
+    if (existing.status === 'COMPLETED' && status !== 'COMPLETED') {
+      throw new Error('Completed bookings cannot change status.');
+    }
+    if (existing.status === 'CANCELLED' && status !== 'CANCELLED') {
+      throw new Error('Cancelled bookings cannot change status.');
+    }
+    if (existing.status === status) {
+      // Duplicate transition attempt
+      return { ...existing };
+    }
 
     const updated: BookingEntity = {
       ...existing,

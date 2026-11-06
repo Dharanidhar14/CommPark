@@ -18,7 +18,6 @@ export interface RegisterDTO {
   name: string;
   phone: string;
   city?: string;
-  role?: Role;
 }
 
 export interface LoginDTO {
@@ -29,6 +28,7 @@ export interface LoginDTO {
 export interface IAuthService {
   register(data: RegisterDTO): Promise<{ user: UserEntity; token: string }>;
   login(data: LoginDTO): Promise<{ user: UserEntity; token: string }>;
+  switchRole(userId: string, targetRole: Role): Promise<{ user: UserEntity; token: string }>;
   verifyToken(token: string): Promise<AuthUserPayload>;
   hashPassword(password: string): Promise<string>;
   comparePassword(plain: string, hash: string): Promise<boolean>;
@@ -68,19 +68,21 @@ export class JwtAuthService implements IAuthService {
     }
 
     const passwordHash = await this.hashPassword(data.password);
-    const assignedRole: Role = data.role || 'CUSTOMER';
 
+    // SECURITY HARDENING: Public registration is strictly locked to CUSTOMER.
+    // Privileged roles (COMMUNITY_ADMIN, SECURITY) and OWNER eligibility must be granted
+    // through authorized internal workflows and verified community records.
     const user = await this.userRepo.create({
       email: data.email,
       passwordHash,
       name: data.name,
       phone: data.phone,
       city: data.city || 'Bengaluru',
-      activeRole: assignedRole,
-      eligibleRoles: [assignedRole],
+      activeRole: 'CUSTOMER',
+      eligibleRoles: ['CUSTOMER'],
     });
 
-    // Create wallet for new user
+    // Create wallet for new customer
     await this.walletRepo.createWallet(user.id);
 
     const token = this.generateToken(user);
@@ -100,6 +102,27 @@ export class JwtAuthService implements IAuthService {
 
     const token = this.generateToken(user);
     return { user, token };
+  }
+
+  async switchRole(userId: string, targetRole: Role): Promise<{ user: UserEntity; token: string }> {
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    // Verify role eligibility from server database records
+    const isEligible = user.eligibleRoles.includes(targetRole);
+    if (!isEligible) {
+      throw new Error(`Forbidden: Account is not authorized for the '${targetRole}' role.`);
+    }
+
+    const updated = await this.userRepo.update(userId, { activeRole: targetRole });
+    if (!updated) {
+      throw new Error('Failed to update active role.');
+    }
+
+    const token = this.generateToken(updated);
+    return { user: updated, token };
   }
 
   async verifyToken(token: string): Promise<AuthUserPayload> {

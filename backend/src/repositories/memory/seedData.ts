@@ -3,7 +3,7 @@ import { VehicleEntity } from '../IVehicleRepository';
 import { ParkingListingEntity } from '../IParkingRepository';
 import { BookingEntity } from '../IBookingRepository';
 import { WalletEntity, WalletTransactionEntity } from '../IWalletRepository';
-import { CommunityEntity, CommunityApprovalEntity } from '../ICommunityRepository';
+import { CommunityEntity, CommunityApprovalEntity, CommunityMembershipEntity } from '../ICommunityRepository';
 import { ReviewEntity } from '../IReviewRepository';
 import { SupportTicketEntity } from '../ISupportRepository';
 import { AuditLogEntity } from '../IAuditRepository';
@@ -59,6 +59,21 @@ export function createInitialSeedData() {
       updatedAt: new Date(),
     },
     {
+      id: 'sec_suspended_01',
+      email: 'suspended.guard@example.in',
+      passwordHash: DEFAULT_PASSWORD_HASH,
+      name: 'Suresh Kumar (Suspended)',
+      phone: '+91 97412 99999',
+      avatarUrl: null,
+      activeRole: 'SECURITY',
+      eligibleRoles: ['SECURITY'],
+      city: 'Bengaluru',
+      verificationStatus: 'SUSPENDED',
+      memberSince: 'April 2024',
+      createdAt: new Date('2024-04-01T08:00:00Z'),
+      updatedAt: new Date(),
+    },
+    {
       id: 'adm_meera_01',
       email: 'meera.nair@example.in',
       passwordHash: DEFAULT_PASSWORD_HASH,
@@ -71,6 +86,21 @@ export function createInitialSeedData() {
       verificationStatus: 'VERIFIED',
       memberSince: 'December 2023',
       createdAt: new Date('2023-12-10T11:00:00Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'adm_suspended_01',
+      email: 'suspended.admin@example.in',
+      passwordHash: DEFAULT_PASSWORD_HASH,
+      name: 'Suresh Suspended',
+      phone: '+91 99001 99999',
+      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
+      activeRole: 'COMMUNITY_ADMIN',
+      eligibleRoles: ['CUSTOMER', 'COMMUNITY_ADMIN'],
+      city: 'Bengaluru',
+      verificationStatus: 'SUSPENDED',
+      memberSince: 'January 2024',
+      createdAt: new Date('2024-01-10T11:00:00Z'),
       updatedAt: new Date(),
     },
   ];
@@ -348,6 +378,44 @@ export function createInitialSeedData() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      id: 'space_meera_self',
+      ownerId: 'adm_meera_01',
+      name: 'Greenwood Palms — Bay A-12 (Admin Owned)',
+      description: 'Owned by Meera Nair (Committee Admin). Must not be self-approved.',
+      address: '14th Main Road, HAL 2nd Stage, Gate 1',
+      locality: 'Indiranagar',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      postalCode: '560038',
+      latitude: 12.9718,
+      longitude: 77.6415,
+      category: 'RESIDENTIAL',
+      accessType: 'SECURITY_VERIFIED',
+      pricePerHour: 50.0,
+      pricePerDay: 300.0,
+      currency: '₹',
+      isCovered: true,
+      supportedVehicles: ['SEDAN', 'SUV', 'EV'],
+      amenities: ['covered', 'security_guard'],
+      isAvailable: false,
+      totalSpots: 1,
+      availableSpots: 0,
+      approvalStatus: 'PENDING_APPROVAL',
+      communityId: 'comm_greenwood_blr',
+      unitNumber: 'Flat A-101',
+      slotNumber: 'A-12',
+      accessInstructions: 'Gate 1 verification required.',
+      securityGuardOnSite: true,
+      operatingHours: '24 Hours',
+      rating: 0,
+      reviewCount: 0,
+      images: [
+        'https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=800&q=80',
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ];
 
   const approvals: CommunityApprovalEntity[] = [
@@ -375,9 +443,23 @@ export function createInitialSeedData() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      id: 'appr_self_meera',
+      listingId: 'space_meera_self',
+      communityId: 'comm_greenwood_blr',
+      status: 'PENDING_APPROVAL',
+      reviewedById: null,
+      rejectionReason: null,
+      submittedAt: new Date(),
+      approvedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ];
 
   const now = new Date();
+  const currentStart = new Date(now.getTime() - 10 * 60 * 1000);
+  const currentEnd = new Date(now.getTime() + 110 * 60 * 1000);
   const tomorrowStart = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   tomorrowStart.setHours(14, 0, 0, 0);
   const tomorrowEnd = new Date(tomorrowStart.getTime() + 2 * 60 * 60 * 1000);
@@ -386,6 +468,30 @@ export function createInitialSeedData() {
     {
       id: 'bk_upcoming_01',
       bookingNumber: 'CP-BLR-2024-0891',
+      listingId: 'space_01',
+      customerId: 'usr_aditya_01',
+      vehicleId: 'veh_01',
+      bookingDate: now.toISOString().split('T')[0],
+      startTime: currentStart,
+      endTime: currentEnd,
+      durationHours: 2,
+      accessType: 'SECURITY_VERIFIED',
+      subtotal: 80.0,
+      serviceFee: 15.0,
+      totalAmount: 95.0,
+      currency: '₹',
+      status: 'UPCOMING',
+      paymentMethod: 'UPI (Google Pay)',
+      qrCodeToken: 'CP-PASS-BLR-891-ADITYA',
+      accessCode: 'GW-8912',
+      specialInstructions: 'Show pass at Gate 2 booth.',
+      isDemoData: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'bk_future_01',
+      bookingNumber: 'CP-BLR-2024-0899',
       listingId: 'space_01',
       customerId: 'usr_aditya_01',
       vehicleId: 'veh_01',
@@ -400,8 +506,8 @@ export function createInitialSeedData() {
       currency: '₹',
       status: 'UPCOMING',
       paymentMethod: 'UPI (Google Pay)',
-      qrCodeToken: 'CP-PASS-BLR-891-ADITYA',
-      accessCode: 'GW-8912',
+      qrCodeToken: 'CP-PASS-BLR-FUTURE-01',
+      accessCode: 'GW-8999',
       specialInstructions: 'Show pass at Gate 2 booth.',
       isDemoData: true,
       createdAt: new Date(),
@@ -573,12 +679,71 @@ export function createInitialSeedData() {
     },
   ];
 
+  const memberships: CommunityMembershipEntity[] = [
+    {
+      id: 'mem_meera_01',
+      communityId: 'comm_greenwood_blr',
+      userId: 'adm_meera_01',
+      role: 'COMMITTEE_MEMBER',
+      unitOrFlatNumber: 'Flat A-101',
+      assignedGate: null,
+      isAuthorized: true,
+      createdAt: new Date('2023-12-10T11:00:00Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'mem_ramesh_01',
+      communityId: 'comm_greenwood_blr',
+      userId: 'sec_ramesh_01',
+      role: 'SECURITY_STAFF',
+      unitOrFlatNumber: null,
+      assignedGate: 'Gate 2',
+      isAuthorized: true,
+      createdAt: new Date('2024-03-01T08:00:00Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'mem_suspended_01',
+      communityId: 'comm_greenwood_blr',
+      userId: 'sec_suspended_01',
+      role: 'SECURITY_STAFF',
+      unitOrFlatNumber: null,
+      assignedGate: 'Gate 1',
+      isAuthorized: false, // Suspended guard
+      createdAt: new Date('2024-04-01T08:00:00Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'mem_suspended_admin',
+      communityId: 'comm_greenwood_blr',
+      userId: 'adm_suspended_01',
+      role: 'COMMITTEE_MEMBER',
+      unitOrFlatNumber: 'Flat C-303',
+      assignedGate: null,
+      isAuthorized: false, // Suspended committee member
+      createdAt: new Date('2024-01-10T11:00:00Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'mem_karthik_01',
+      communityId: 'comm_greenwood_blr',
+      userId: 'own_karthik_01',
+      role: 'RESIDENT',
+      unitOrFlatNumber: 'Flat B-402',
+      assignedGate: null,
+      isAuthorized: true,
+      createdAt: new Date('2024-01-15T09:00:00Z'),
+      updatedAt: new Date(),
+    },
+  ];
+
   return {
     users,
     vehicles,
     communities,
     listings,
     approvals,
+    memberships,
     bookings,
     wallets,
     transactions,

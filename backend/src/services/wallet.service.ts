@@ -26,7 +26,8 @@ export class WalletService {
   async topUp(
     userId: string,
     amount: number,
-    paymentMethod: string = 'UPI (Instant)'
+    paymentMethod: string = 'UPI (Instant)',
+    idempotencyKey?: string
   ): Promise<{ wallet: WalletEntity; transaction: WalletTransactionEntity }> {
     if (amount <= 0) {
       throw new Error('Top-up amount must be greater than zero.');
@@ -34,6 +35,7 @@ export class WalletService {
     const wallet = await this.getWallet(userId);
     return this.walletRepo.recordTransaction({
       walletId: wallet.id,
+      idempotencyKey,
       type: 'WALLET_TOPUP',
       title: 'Wallet Balance Top-up',
       amount,
@@ -47,7 +49,8 @@ export class WalletService {
     userId: string,
     bookingId: string,
     amount: number,
-    listingName: string
+    listingName: string,
+    idempotencyKey?: string
   ): Promise<{ wallet: WalletEntity; transaction: WalletTransactionEntity }> {
     if (amount <= 0) {
       throw new Error('Debit amount must be greater than zero.');
@@ -61,6 +64,7 @@ export class WalletService {
 
     return this.walletRepo.recordTransaction({
       walletId: wallet.id,
+      idempotencyKey: idempotencyKey || `booking_debit_${bookingId}`,
       type: 'PARKING_PAYMENT',
       title: `Parking Fee — ${listingName}`,
       amount: -amount,
@@ -75,7 +79,8 @@ export class WalletService {
     userId: string,
     bookingId: string,
     amount: number,
-    reason: string = 'Booking Cancellation Refund'
+    reason: string = 'Booking Cancellation Refund',
+    idempotencyKey?: string
   ): Promise<{ wallet: WalletEntity; transaction: WalletTransactionEntity }> {
     if (amount <= 0) {
       throw new Error('Refund amount must be greater than zero.');
@@ -83,6 +88,7 @@ export class WalletService {
     const wallet = await this.getWallet(userId);
     return this.walletRepo.recordTransaction({
       walletId: wallet.id,
+      idempotencyKey: idempotencyKey || `refund_${bookingId}`,
       type: 'PARKING_REFUND',
       title: `Refund — ${reason}`,
       amount,
@@ -97,11 +103,13 @@ export class WalletService {
     ownerId: string,
     bookingId: string,
     amount: number,
-    listingName: string
+    listingName: string,
+    idempotencyKey?: string
   ): Promise<{ wallet: WalletEntity; transaction: WalletTransactionEntity }> {
     const wallet = await this.getWallet(ownerId);
     return this.walletRepo.recordTransaction({
       walletId: wallet.id,
+      idempotencyKey: idempotencyKey || `payout_${bookingId}`,
       type: 'OWNER_EARNING',
       title: `Rental Earning — ${listingName}`,
       amount,
@@ -115,11 +123,13 @@ export class WalletService {
   async creditForGuardIncentive(
     guardId: string,
     bookingId: string,
-    amount: number = 15.0
+    amount: number = 15.0,
+    idempotencyKey?: string
   ): Promise<{ wallet: WalletEntity; transaction: WalletTransactionEntity }> {
     const wallet = await this.getWallet(guardId);
     return this.walletRepo.recordTransaction({
       walletId: wallet.id,
+      idempotencyKey: idempotencyKey || `guard_incentive_${bookingId}`,
       type: 'GUARD_INCENTIVE',
       title: 'Gate Access Verification Incentive',
       amount,

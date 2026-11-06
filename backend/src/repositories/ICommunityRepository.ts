@@ -12,6 +12,20 @@ export interface CommunityEntity {
   updatedAt: Date;
 }
 
+export type CommunityRole = 'RESIDENT' | 'SECURITY_STAFF' | 'COMMITTEE_MEMBER';
+
+export interface CommunityMembershipEntity {
+  id: string;
+  communityId: string;
+  userId: string;
+  role: CommunityRole;
+  unitOrFlatNumber?: string | null;
+  assignedGate?: string | null;
+  isAuthorized: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface CommunityApprovalEntity {
   id: string;
   listingId: string;
@@ -30,6 +44,7 @@ export interface ICommunityRepository {
   findAll(): Promise<CommunityEntity[]>;
   create(data: Omit<CommunityEntity, 'id' | 'createdAt' | 'updatedAt'>): Promise<CommunityEntity>;
   findApprovalsByCommunityId(communityId: string): Promise<CommunityApprovalEntity[]>;
+  findApprovalById(approvalId: string): Promise<CommunityApprovalEntity | null>;
   createApprovalRequest(listingId: string, communityId: string): Promise<CommunityApprovalEntity>;
   processApproval(
     approvalId: string,
@@ -37,4 +52,6 @@ export interface ICommunityRepository {
     reviewedById: string,
     rejectionReason?: string
   ): Promise<CommunityApprovalEntity | null>;
+  getMembership(communityId: string, userId: string): Promise<CommunityMembershipEntity | null>;
+  setMembershipStatus(communityId: string, userId: string, isAuthorized: boolean): Promise<boolean>;
 }

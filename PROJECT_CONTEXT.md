@@ -9,7 +9,7 @@
 - Language: TypeScript
 - Navigation: Expo Router
 - Development environment: Google Antigravity
-- Current development stage: Milestone 6: Backend Foundation, Database Architecture & Frontend Integration Completed
+- Current development stage: Milestone 7: Backend Security, Financial Integrity & Production Readiness Audit Completed
 
 ## 2. Product vision
 CommunityPark is a community-driven parking marketplace that allows people to discover and book available parking spaces while enabling property owners and residents to monetize unused parking spaces.
@@ -97,3 +97,14 @@ One application and one user account supporting:
 - **Validation & Security**: Zod schemas for request validation, bcrypt password hashing, JWT authentication provider abstraction (`IAuthService`), and role-based authorisation middleware.
 - **Supabase Migration Blueprint**: Documented in `docs/SUPABASE_MIGRATION.md` (RLS policies, schema push, auth adapter, storage bucket mapping, realtime subscriptions).
 - **Frontend API Client**: Located at `src/services/api/` with automatic offline fallback to local mock stores.
+
+## 12. Backend Security, Financial Integrity & Production Hardening (Task 07)
+- **Authentication & Role Hardening**: Public registration is strictly locked to `CUSTOMER` role. Privileged roles (`COMMUNITY_ADMIN`, `SECURITY`) are stripped from public payloads and cannot be self-assigned. Server-side role switching (`POST /api/v1/auth/switch-role`) verifies eligibility in the database before issuing an updated JWT.
+- **Community-Scoped Authorization**: Committee administrators and guards are strictly scoped to communities where they hold authorized `CommunityMembership`. Self-approval of residential parking spaces by committee members is blocked (HTTP 403 Forbidden).
+- **Concurrency & Double-Booking Prevention**: Serialized overlap checks and reservation inserts via PostgreSQL advisory transactional locks (`pg_advisory_xact_lock`) and memory mutex locks, ensuring concurrent overlapping requests fail gracefully with HTTP 409 Conflict.
+- **Financial Ledger & Idempotency**: Added unique `idempotencyKey` on `WalletTransaction` and `SecurityVerification`. Endpoints accept `Idempotency-Key` HTTP headers to prevent double-charging or duplicate credits on network retries.
+- **Cryptographic Security**: Migrated all tokens, booking numbers, and transaction references from `Math.random()` to Node's `crypto.randomBytes(16)`.
+- **Security Guard Verification Boundaries**: Access is restricted to a 30-minute arrival window before booking start time up to end time. Guard incentives are credited idempotently (awarded once upon first entry). Explicit hardware disclaimers highlight simulation boundaries.
+- **Production Environment Hardening**: Fail-fast environment validation in production mode rejecting weak JWT secrets (<32 characters), default database credentials, or wildcard CORS. Integrated `helmet` security headers and `express-rate-limit`.
+- **Mobile Token Storage**: Integrated `expo-secure-store` with web `localStorage` fallback to persist JWT tokens securely across app lifecycles.
+- **Automated Test Coverage**: 45/45 tests passing across 9 test suites (`auth`, `auth_security`, `booking`, `concurrency_booking`, `community_auth`, `security`, `wallet`, `wallet_integrity`, `config_hardening`).

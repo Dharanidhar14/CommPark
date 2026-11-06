@@ -23,7 +23,20 @@ export class CommunityService {
     return this.communityRepo.findById(id);
   }
 
-  async getPendingApprovals(communityId: string): Promise<CommunityApprovalEntity[]> {
+  async getPendingApprovals(
+    communityId: string,
+    adminId: string
+  ): Promise<CommunityApprovalEntity[]> {
+    // Verify administrator holds valid membership in this specific community
+    const membership = await this.communityRepo.getMembership(communityId, adminId);
+    if (!membership || membership.role !== 'COMMITTEE_MEMBER') {
+      throw new Error('Forbidden: you are not an authorized administrator for this community.');
+    }
+
+    if (!membership.isAuthorized) {
+      throw new Error('Forbidden: Revoked or suspended committee membership prevents administrative actions.');
+    }
+
     const list = await this.communityRepo.findApprovalsByCommunityId(communityId);
     return list.filter((a) => a.status === 'PENDING_APPROVAL');
   }
@@ -39,6 +52,28 @@ export class CommunityService {
       throw new Error('Admin user not found.');
     }
 
+    const approval = await this.communityRepo.findApprovalById(approvalId);
+    if (!approval) {
+      throw new Error('Approval request not found.');
+    }
+
+    // 1. Verify community-specific authorization
+    const membership = await this.communityRepo.getMembership(approval.communityId, adminId);
+    if (!membership || membership.role !== 'COMMITTEE_MEMBER') {
+      throw new Error('Forbidden: you are not an authorized administrator for this community.');
+    }
+
+    // 2. Verify membership has not been suspended or revoked
+    if (!membership.isAuthorized) {
+      throw new Error('Forbidden: Revoked or suspended committee membership prevents administrative actions.');
+    }
+
+    // 3. Self-approval prevention
+    const listing = await this.parkingRepo.findById(approval.listingId);
+    if (listing && listing.ownerId === adminId) {
+      throw new Error('Forbidden: Self-approval is strictly prohibited. An administrator cannot approve their own parking space listing.');
+    }
+
     const updated = await this.communityRepo.processApproval(
       approvalId,
       status,
@@ -47,10 +82,10 @@ export class CommunityService {
     );
 
     if (!updated) {
-      throw new Error('Approval request not found.');
+      throw new Error('Failed to update approval request.');
     }
 
-    // Also ensure listing status is updated
+    // Update listing status
     await this.parkingRepo.updateApprovalStatus(updated.listingId, status);
 
     // Record audit log
@@ -60,7 +95,7 @@ export class CommunityService {
       actorName: admin.name,
       actorRole: admin.activeRole,
       targetId: updated.listingId,
-      targetDescription: `Parking listing ${updated.listingId}`,
+      targetDescription: listing ? listing.name : `Parking listing ${updated.listingId}`,
       details: reason || (status === 'APPROVED' ? 'RWA committee approval granted' : 'Rejected by RWA committee'),
       isDemoRecord: false,
     });

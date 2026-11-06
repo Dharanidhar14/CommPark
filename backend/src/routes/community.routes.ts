@@ -49,7 +49,10 @@ router.get(
   requireRoles('COMMUNITY_ADMIN'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const approvals = await services.communityService.getPendingApprovals(req.params.id as string);
+      const approvals = await services.communityService.getPendingApprovals(
+        req.params.id as string,
+        req.user!.id
+      );
       res.json({ success: true, data: approvals });
     } catch (error) {
       next(error);

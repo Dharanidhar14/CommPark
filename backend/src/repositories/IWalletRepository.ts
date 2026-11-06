@@ -24,6 +24,7 @@ export interface WalletTransactionEntity {
   id: string;
   walletId: string;
   txNumber: string;
+  idempotencyKey?: string | null;
   type: TransactionType;
   title: string;
   amount: number;
@@ -45,7 +46,9 @@ export interface CreateTransactionData {
   category: string;
   relatedBookingId?: string;
   paymentMethodUsed?: string;
+  referenceNumber?: string;
   note?: string;
+  idempotencyKey?: string;
 }
 
 export interface IWalletRepository {

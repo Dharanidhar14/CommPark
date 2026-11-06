@@ -208,5 +208,51 @@
 
 ---
 
+- [x] **Milestone 7 / Task 07: Backend Security, Financial Integrity & Production Readiness Audit (Completed & Verified)**
+  - [x] **Comprehensive Vulnerability Audit**:
+    - [x] Conducted full vulnerability review documented in `docs/SECURITY_AND_INTEGRITY_AUDIT.md`.
+    - [x] Identified and fixed privilege escalation, cross-community authorization bypass, concurrency race conditions, financial idempotency, and predictable randomness risks.
+  - [x] **Authentication & Role Hardening**:
+    - [x] Stripped `role` from public `registerSchema`. Public registration strictly creates `CUSTOMER` accounts (`activeRole: 'CUSTOMER'`, `eligibleRoles: ['CUSTOMER']`).
+    - [x] Added `POST /api/v1/auth/switch-role` endpoint verifying database role eligibility before issuing updated JWT token.
+    - [x] Integrated `helmet` security headers and `express-rate-limit` on `/auth/login` and `/auth/register`.
+  - [x] **Community-Scoped Authorization & Self-Approval Prevention**:
+    - [x] Enforced community-specific `CommunityMembership` checks verifying `communityId`, `COMMITTEE_MEMBER` role, and `isAuthorized === true`.
+    - [x] Blocked self-approval: committee administrators cannot approve their own parking space listings (HTTP 403 Forbidden).
+    - [x] Verified that suspended or revoked committee members cannot perform approval actions.
+  - [x] **Booking Concurrency, Lifecycle & Atomic Debits**:
+    - [x] PostgreSQL transactional advisory locking (`pg_advisory_xact_lock`) inside serializable `$transaction` blocks.
+    - [x] In-memory per-listing mutex locks (`listingLocks`) to serialize concurrent overlap check and booking insertion.
+    - [x] Pre-validates wallet balance prior to reservation creation; fails atomically if balance is insufficient.
+    - [x] Enforced strict state machine transitions (`UPCOMING -> ACTIVE -> COMPLETED`, `UPCOMING -> CANCELLED`); prevents duplicate cancellations and duplicate refunds.
+  - [x] **Financial Ledger & Idempotency**:
+    - [x] Added `@unique idempotencyKey` to `WalletTransaction` and `SecurityVerification` in Prisma schema.
+    - [x] Added `Idempotency-Key` HTTP header support across `/wallet/topup`, booking debit, and cancellation refund.
+    - [x] Cryptographically secure random identifiers (`crypto.randomBytes`) for QR tokens, booking numbers, and transaction references.
+  - [x] **Security Guard Gate Verification Integrity**:
+    - [x] Enforced 30-minute arrival window before booking start time up to end time; denies entry outside arrival window.
+    - [x] Guard community scoping: guards can only verify passes for communities where they hold authorized `SECURITY_STAFF` membership.
+    - [x] Minimized exposed verification data to prevent PII leakage.
+    - [x] Added explicit physical hardware disclaimer in guard responses and mobile UI.
+  - [x] **Mobile Token Persistence & Require Cycle Resolution**:
+    - [x] Integrated `expo-secure-store` with web `localStorage` fallback in `src/services/api/client.ts`.
+    - [x] Decoupled `useAuthStore` from `useBookingStore` to break circular require cycle.
+  - [x] **Automated Hardening Test Suite (45/45 Passed)**:
+    - [x] `tests/auth.test.ts` (6 tests)
+    - [x] `tests/auth_security.test.ts` (6 tests)
+    - [x] `tests/booking.test.ts` (4 tests)
+    - [x] `tests/concurrency_booking.test.ts` (4 tests)
+    - [x] `tests/community_auth.test.ts` (6 tests)
+    - [x] `tests/security.test.ts` (6 tests)
+    - [x] `tests/wallet.test.ts` (3 tests)
+    - [x] `tests/wallet_integrity.test.ts` (5 tests)
+    - [x] `tests/config_hardening.test.ts` (5 tests)
+  - [x] **Static Analysis & Health Checks**:
+    - [x] Root TypeScript check: `npm run ts:check` (0 errors).
+    - [x] Backend TypeScript check: `cd backend; npx tsc --noEmit` (0 errors).
+    - [x] Expo Doctor: `npx expo-doctor` (20/20 checks passed).
+
+---
+
 ## Upcoming Milestones
-- [ ] **Milestone 7: End-to-End Testing & Production Release**
+- [ ] **Milestone 8: Cloud Infrastructure Deployment & Live Supabase Integration**

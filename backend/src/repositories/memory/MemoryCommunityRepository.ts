@@ -2,21 +2,28 @@ import {
   ICommunityRepository,
   CommunityEntity,
   CommunityApprovalEntity,
+  CommunityMembershipEntity,
 } from '../ICommunityRepository';
 
 export class MemoryCommunityRepository implements ICommunityRepository {
   private communities: Map<string, CommunityEntity> = new Map();
   private approvals: Map<string, CommunityApprovalEntity> = new Map();
+  private memberships: Map<string, CommunityMembershipEntity> = new Map();
 
   constructor(
     initialCommunities: CommunityEntity[] = [],
-    initialApprovals: CommunityApprovalEntity[] = []
+    initialApprovals: CommunityApprovalEntity[] = [],
+    initialMemberships: CommunityMembershipEntity[] = []
   ) {
     for (const c of initialCommunities) {
       this.communities.set(c.id, { ...c });
     }
     for (const a of initialApprovals) {
       this.approvals.set(a.id, { ...a });
+    }
+    for (const m of initialMemberships) {
+      const key = `${m.communityId}_${m.userId}`;
+      this.memberships.set(key, { ...m });
     }
   }
 
@@ -46,6 +53,11 @@ export class MemoryCommunityRepository implements ICommunityRepository {
     return Array.from(this.approvals.values())
       .filter((a) => a.communityId === communityId)
       .map((a) => ({ ...a }));
+  }
+
+  async findApprovalById(approvalId: string): Promise<CommunityApprovalEntity | null> {
+    const a = this.approvals.get(approvalId);
+    return a ? { ...a } : null;
   }
 
   async createApprovalRequest(listingId: string, communityId: string): Promise<CommunityApprovalEntity> {
@@ -87,5 +99,21 @@ export class MemoryCommunityRepository implements ICommunityRepository {
     };
     this.approvals.set(approvalId, updated);
     return { ...updated };
+  }
+
+  async getMembership(communityId: string, userId: string): Promise<CommunityMembershipEntity | null> {
+    const key = `${communityId}_${userId}`;
+    const m = this.memberships.get(key);
+    return m ? { ...m } : null;
+  }
+
+  async setMembershipStatus(communityId: string, userId: string, isAuthorized: boolean): Promise<boolean> {
+    const key = `${communityId}_${userId}`;
+    const existing = this.memberships.get(key);
+    if (!existing) return false;
+    existing.isAuthorized = isAuthorized;
+    existing.updatedAt = new Date();
+    this.memberships.set(key, existing);
+    return true;
   }
 }

@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { UserProfile, UserRole, SavedPlace, UserPreferences } from '../types/user';
 import { RegisteredVehicle } from '../types/booking';
 import { MOCK_CURRENT_USER, MOCK_VEHICLES } from '../constants/mockData';
-import { useBookingStore } from './useBookingStore';
 
 interface AuthState {
   user: UserProfile;
@@ -85,10 +84,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     })),
 
   removeVehicle: (id) => {
-    // Check if linked to active reservation in useBookingStore
+    // Check if linked to active reservation in booking store
+    // Dynamic lookup breaks circular require cycle (useBookingStore -> useWalletStore -> useAuthStore -> useBookingStore)
     try {
-      const activeBooking = useBookingStore.getState().activeBooking;
-      if (activeBooking && activeBooking.vehicle.id === id && activeBooking.status === 'active') {
+      const bookingStore = require('./useBookingStore');
+      const activeBooking = bookingStore.useBookingStore?.getState?.()?.activeBooking;
+      if (activeBooking && activeBooking.vehicle?.id === id && activeBooking.status === 'active') {
         return {
           success: false,
           reason: `Vehicle ${activeBooking.vehicle.licensePlate} is linked to active booking #${activeBooking.bookingNumber}. Please complete or cancel the booking first.`,

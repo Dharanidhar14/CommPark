@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {
   PrismaClient,
   BookingStatusEnum,
@@ -95,35 +96,60 @@ export class PrismaBookingRepository implements IBookingRepository {
   }
 
   async create(data: CreateBookingData): Promise<BookingEntity> {
-    const randomHex = Math.floor(1000 + Math.random() * 9000).toString();
-    const bookingNumber = `CP-BLR-${new Date().getFullYear()}-${randomHex}`;
-    const qrCodeToken = `CP-PASS-BLR-${randomHex}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    return await this.prisma.$transaction(async (tx) => {
+      // POSTGRESQL CONCURRENCY LOCK: Serializes concurrent reservations on this listing
+      try {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${data.listingId}))`;
+      } catch {
+        // Safe fallback if raw execute is not supported by driver
+      }
 
-    const item = await this.prisma.booking.create({
-      data: {
-        bookingNumber,
-        listingId: data.listingId,
-        customerId: data.customerId,
-        vehicleId: data.vehicleId,
-        bookingDate: data.bookingDate,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        durationHours: data.durationHours,
-        accessType: data.accessType as AccessMethod,
-        subtotal: data.subtotal,
-        serviceFee: data.serviceFee,
-        totalAmount: data.totalAmount,
-        currency: data.currency || '₹',
-        status: BookingStatusEnum.UPCOMING,
-        paymentMethod: data.paymentMethod || 'CommunityPark Wallet',
-        qrCodeToken,
-        accessCode: data.accessCode || `AC-${randomHex.substring(0, 4)}`,
-        specialInstructions: data.specialInstructions || null,
-        isDemoData: false,
-      },
+      // Check overlapping bookings inside isolated transaction
+      const overlaps = await tx.booking.findMany({
+        where: {
+          listingId: data.listingId,
+          status: { not: BookingStatusEnum.CANCELLED },
+          startTime: { lt: data.endTime },
+          endTime: { gt: data.startTime },
+        },
+      });
+
+      if (overlaps.length > 0) {
+        throw new Error(
+          'This parking space is already reserved for the selected time window. Please choose another slot.'
+        );
+      }
+
+      const randomHex = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const bookingNumber = `CP-BLR-${new Date().getFullYear()}-${randomHex}`;
+      const secureQrToken = `CP-PASS-BLR-${crypto.randomBytes(16).toString('hex').toUpperCase()}`;
+
+      const item = await tx.booking.create({
+        data: {
+          bookingNumber,
+          listingId: data.listingId,
+          customerId: data.customerId,
+          vehicleId: data.vehicleId,
+          bookingDate: data.bookingDate,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          durationHours: data.durationHours,
+          accessType: data.accessType as AccessMethod,
+          subtotal: data.subtotal,
+          serviceFee: data.serviceFee,
+          totalAmount: data.totalAmount,
+          currency: data.currency || '₹',
+          status: BookingStatusEnum.UPCOMING,
+          paymentMethod: data.paymentMethod || 'CommunityPark Wallet',
+          qrCodeToken: secureQrToken,
+          accessCode: data.accessCode || `AC-${randomHex}`,
+          specialInstructions: data.specialInstructions || null,
+          isDemoData: false,
+        },
+      });
+
+      return this.mapToEntity(item);
     });
-
-    return this.mapToEntity(item);
   }
 
   async updateStatus(
@@ -132,16 +158,27 @@ export class PrismaBookingRepository implements IBookingRepository {
     reason?: string,
     changedById?: string
   ): Promise<BookingEntity | null> {
-    try {
-      const existing = await this.prisma.booking.findUnique({ where: { id } });
+    return await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.booking.findUnique({ where: { id } });
       if (!existing) return null;
 
-      const [item] = await this.prisma.$transaction([
-        this.prisma.booking.update({
+      // Validate state machine transitions
+      if (existing.status === BookingStatusEnum.COMPLETED && status !== 'COMPLETED') {
+        throw new Error('Completed bookings cannot change status.');
+      }
+      if (existing.status === BookingStatusEnum.CANCELLED && status !== 'CANCELLED') {
+        throw new Error('Cancelled bookings cannot change status.');
+      }
+      if (existing.status === status) {
+        return this.mapToEntity(existing);
+      }
+
+      const [item] = await Promise.all([
+        tx.booking.update({
           where: { id },
           data: { status: status as BookingStatusEnum },
         }),
-        this.prisma.bookingStatusHistory.create({
+        tx.bookingStatusHistory.create({
           data: {
             bookingId: id,
             fromStatus: existing.status,
@@ -153,8 +190,6 @@ export class PrismaBookingRepository implements IBookingRepository {
       ]);
 
       return this.mapToEntity(item);
-    } catch {
-      return null;
-    }
+    });
   }
 }

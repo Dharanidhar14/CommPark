@@ -24,7 +24,7 @@ export async function loginApi(
   });
 
   if (res.data?.token) {
-    setApiAuthToken(res.data.token);
+    await setApiAuthToken(res.data.token);
   }
   return res;
 }
@@ -35,7 +35,6 @@ export async function registerApi(data: {
   name: string;
   phone: string;
   city?: string;
-  role?: string;
 }): Promise<ApiResponse<UserAuthData>> {
   const res = await apiRequest<UserAuthData>('/auth/register', {
     method: 'POST',
@@ -43,11 +42,29 @@ export async function registerApi(data: {
   });
 
   if (res.data?.token) {
-    setApiAuthToken(res.data.token);
+    await setApiAuthToken(res.data.token);
+  }
+  return res;
+}
+
+export async function switchRoleApi(role: string): Promise<ApiResponse<UserAuthData>> {
+  const res = await apiRequest<UserAuthData>('/auth/switch-role', {
+    method: 'POST',
+    body: JSON.stringify({ role: role.toUpperCase() }),
+  });
+
+  if (res.data?.token) {
+    await setApiAuthToken(res.data.token);
   }
   return res;
 }
 
 export async function getMeApi(): Promise<ApiResponse<any>> {
   return apiRequest('/auth/me');
+}
+
+export async function logoutApi(): Promise<ApiResponse<any>> {
+  const res = await apiRequest('/auth/logout', { method: 'POST' });
+  await setApiAuthToken(null);
+  return res;
 }

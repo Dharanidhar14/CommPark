@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {
   PrismaClient,
   TransactionTypeEnum,
@@ -35,6 +36,7 @@ export class PrismaWalletRepository implements IWalletRepository {
       id: tx.id,
       walletId: tx.walletId,
       txNumber: tx.txNumber,
+      idempotencyKey: tx.idempotencyKey,
       type: tx.type as TransactionType,
       title: tx.title,
       amount: Number(tx.amount),
@@ -84,6 +86,23 @@ export class PrismaWalletRepository implements IWalletRepository {
     data: CreateTransactionData
   ): Promise<{ wallet: WalletEntity; transaction: WalletTransactionEntity }> {
     return await this.prisma.$transaction(async (tx) => {
+      // FINANCIAL IDEMPOTENCY CHECK
+      if (data.idempotencyKey) {
+        const existingTx = await tx.walletTransaction.findUnique({
+          where: { idempotencyKey: data.idempotencyKey },
+        });
+
+        if (existingTx) {
+          const currentWallet = await tx.wallet.findUnique({
+            where: { id: data.walletId },
+          });
+          return {
+            wallet: this.mapWalletToEntity(currentWallet),
+            transaction: this.mapTxToEntity(existingTx),
+          };
+        }
+      }
+
       const wallet = await tx.wallet.findUnique({
         where: { id: data.walletId },
       });
@@ -118,14 +137,15 @@ export class PrismaWalletRepository implements IWalletRepository {
         },
       });
 
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const txNumber = `TXN-BLR-${randomSuffix}`;
-      const referenceNumber = `REF-${Date.now()}-${randomSuffix}`;
+      const hexSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+      const txNumber = `TXN-BLR-${hexSuffix}`;
+      const referenceNumber = data.referenceNumber || `REF-${Date.now()}-${hexSuffix}`;
 
       const createdTx = await tx.walletTransaction.create({
         data: {
           walletId: data.walletId,
           txNumber,
+          idempotencyKey: data.idempotencyKey || null,
           type: data.type as TransactionTypeEnum,
           title: data.title,
           amount: new Prisma.Decimal(data.amount.toFixed(2)),

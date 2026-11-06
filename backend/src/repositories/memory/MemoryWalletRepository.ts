@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import {
   IWalletRepository,
   WalletEntity,
@@ -34,7 +35,7 @@ export class MemoryWalletRepository implements IWalletRepository {
     const existing = await this.findByUserId(userId);
     if (existing) return existing;
 
-    const id = `wal_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const id = `wal_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
     const now = new Date();
     const wallet: WalletEntity = {
       id,
@@ -67,10 +68,24 @@ export class MemoryWalletRepository implements IWalletRepository {
       throw new Error(`Wallet not found for id: ${data.walletId}`);
     }
 
-    const txId = `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const txNumber = `TXN-BLR-${randomSuffix}`;
-    const referenceNumber = `REF-${Date.now()}-${randomSuffix}`;
+    // FINANCIAL IDEMPOTENCY CHECK
+    if (data.idempotencyKey) {
+      for (const existingTx of this.transactions.values()) {
+        if (existingTx.idempotencyKey === data.idempotencyKey) {
+          // Idempotent hit: return existing transaction and current wallet state without re-mutating
+          return {
+            wallet: { ...wallet },
+            transaction: { ...existingTx },
+          };
+        }
+      }
+    }
+
+    // Cryptographically secure identifiers
+    const txId = `tx_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    const hexSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const txNumber = `TXN-BLR-${hexSuffix}`;
+    const referenceNumber = data.referenceNumber || `REF-${Date.now()}-${hexSuffix}`;
     const now = new Date();
 
     // Check balance for negative amounts (debits)
@@ -100,6 +115,7 @@ export class MemoryWalletRepository implements IWalletRepository {
       id: txId,
       walletId: data.walletId,
       txNumber,
+      idempotencyKey: data.idempotencyKey || null,
       type: data.type,
       title: data.title,
       amount: data.amount,

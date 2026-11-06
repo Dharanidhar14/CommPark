@@ -128,18 +128,48 @@ CommPark/
 
 ### Run the App
 ```bash
-# Start development server
+# Start frontend Expo development server
 npm start
 
-# Run on web
+# Run frontend on web
 npm run web
 
-# Check TypeScript compiler
+# Check frontend TypeScript compiler
 npm run ts:check
 
 # Run Expo Doctor diagnostic
 npx expo-doctor
 ```
+
+### Backend & Security Testing
+```bash
+# Navigate to backend directory
+cd backend
+
+# Install dependencies and generate Prisma client
+npm install
+npx prisma generate
+
+# Run backend development server (Port 5000)
+npm run dev
+
+# Run comprehensive test suite (45 tests across 9 suites)
+npm test
+
+# Check backend TypeScript compilation
+npx tsc --noEmit
+```
+
+---
+
+## Security & Financial Integrity Guarantees (Task 07)
+- **Zero Public Privilege Escalation**: Public registration strictly creates `CUSTOMER` accounts. Role elevation to `OWNER`, `SECURITY`, or `COMMUNITY_ADMIN` requires server-side validation.
+- **Community-Scoped Authorization**: Administrators and guards can only manage listings and verify gates for communities where they hold verified active memberships. Self-approval of residential listings by committee members is blocked.
+- **Double-Booking Prevention**: Concurrency race conditions are eliminated through PostgreSQL transactional advisory locks (`pg_advisory_xact_lock`) and memory mutex locks.
+- **Financial Idempotency**: Transactions support unique `Idempotency-Key` headers to prevent duplicate debits and credits on network retries.
+- **Cryptographic Randomness**: Pass tokens, booking codes, and transaction references use Node's `crypto.randomBytes(16)`.
+- **Production Fail-Fast**: Strict configuration validation halts deployment if default credentials, weak JWT secrets (<32 characters), or wildcard CORS are detected.
+
 
 ---
 

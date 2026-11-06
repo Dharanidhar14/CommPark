@@ -67,6 +67,48 @@ describe('Security Guard Verification & Gate Access Tests', () => {
     expect(verifyRes.body.data.message).toContain('Plate Mismatch');
   });
 
+  it('should deny verification when outside arrival window', async () => {
+    const verifyRes = await request(app)
+      .post('/api/v1/security/verify')
+      .set('Authorization', `Bearer ${guardToken}`)
+      .send({
+        qrCodeToken: 'CP-PASS-BLR-FUTURE-01',
+        licensePlate: 'KA 01 MJ 4821',
+        gateNumber: 'Gate 2',
+      });
+
+    expect(verifyRes.status).toBe(200);
+    expect(verifyRes.body.success).toBe(false);
+    expect(verifyRes.body.data.status).toBe('DENIED');
+    expect(verifyRes.body.data.message).toContain('Outside allowed arrival window');
+  });
+
+  it('should not award duplicate guard incentive when pass is already verified and active', async () => {
+    const walletBefore = await request(app)
+      .get('/api/v1/wallet')
+      .set('Authorization', `Bearer ${guardToken}`);
+    const guardEarnedBefore = walletBefore.body.data.earnedAsGuard;
+
+    // Verify again when already active
+    const verifyRes = await request(app)
+      .post('/api/v1/security/verify')
+      .set('Authorization', `Bearer ${guardToken}`)
+      .send({
+        qrCodeToken: 'CP-PASS-BLR-891-ADITYA',
+        licensePlate: 'KA 01 MJ 4821',
+        gateNumber: 'Gate 2',
+      });
+
+    expect(verifyRes.status).toBe(200);
+    expect(verifyRes.body.success).toBe(true);
+    expect(verifyRes.body.data.verification.guardIncentiveAmount).toBe(0); // Duplicate check does not reward again
+
+    const walletAfter = await request(app)
+      .get('/api/v1/wallet')
+      .set('Authorization', `Bearer ${guardToken}`);
+    expect(walletAfter.body.data.earnedAsGuard).toBe(guardEarnedBefore);
+  });
+
   it('should record exit and complete booking session', async () => {
     const exitRes = await request(app)
       .post('/api/v1/security/exit')
@@ -79,5 +121,19 @@ describe('Security Guard Verification & Gate Access Tests', () => {
     expect(exitRes.status).toBe(200);
     expect(exitRes.body.success).toBe(true);
     expect(exitRes.body.data.result).toBe('EXIT_RECORDED');
+  });
+
+  it('should reject recording exit on an already completed session', async () => {
+    const exitRes = await request(app)
+      .post('/api/v1/security/exit')
+      .set('Authorization', `Bearer ${guardToken}`)
+      .send({
+        bookingId: 'bk_upcoming_01',
+        gateNumber: 'Gate 2',
+      });
+
+    expect(exitRes.status).toBe(409);
+    expect(exitRes.body.success).toBe(false);
+    expect(exitRes.body.error).toContain('completed');
   });
 });

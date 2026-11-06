@@ -61,30 +61,28 @@ export class BookingService {
       throw new Error('Unauthorized: vehicle does not belong to your account.');
     }
 
-    // 4. Concurrency check: prevent double booking
-    const overlaps = await this.bookingRepo.checkOverlappingBookings(
-      listing.id,
-      sTime,
-      eTime
-    );
-
-    if (overlaps.length > 0) {
-      throw new Error(
-        'This parking space is already reserved for the selected time window. Please choose another slot.'
-      );
-    }
-
-    // 5. Server-authoritative price calculation
+    // 4. Server-authoritative price calculation
     const durationMs = eTime.getTime() - sTime.getTime();
     const durationHours = Math.max(1, Math.ceil(durationMs / (1000 * 60 * 60)));
     const subtotal = Math.round(listing.pricePerHour * durationHours * 100) / 100;
-    const serviceFee = 15.0; // ₹15 standard platform service fee
+    const serviceFee = 15.0; // ₹15 platform service fee
     const totalAmount = Math.round((subtotal + serviceFee) * 100) / 100;
 
-    const bookingDate = sTime.toISOString().split('T')[0];
     const paymentMethod = data.paymentMethod || 'CommunityPark Wallet';
+    const isWalletPayment = paymentMethod.toLowerCase().includes('wallet');
 
-    // 6. Create booking record
+    // 5. Pre-validate wallet funds before creating reservation
+    if (isWalletPayment) {
+      const wallet = await this.walletService.getWallet(customerId);
+      if (wallet.availableBalance < totalAmount) {
+        throw new Error(
+          `Insufficient wallet balance. Required: ₹${totalAmount.toFixed(2)}, Available: ₹${wallet.availableBalance.toFixed(2)}`
+        );
+      }
+    }
+
+    // 6. Create booking record (executes atomic overlap check in repository)
+    const bookingDate = sTime.toISOString().split('T')[0];
     const booking = await this.bookingRepo.create({
       listingId: listing.id,
       customerId,
@@ -102,18 +100,19 @@ export class BookingService {
       specialInstructions: data.specialInstructions,
     });
 
-    // 7. Process payment if wallet
-    if (paymentMethod.toLowerCase().includes('wallet')) {
+    // 7. Process payment atomically with idempotency key
+    if (isWalletPayment) {
       try {
         await this.walletService.debitForBooking(
           customerId,
           booking.id,
           totalAmount,
-          listing.name
+          listing.name,
+          `booking_debit_${booking.id}`
         );
       } catch (err: any) {
-        // Rollback booking status if debit fails
-        await this.bookingRepo.updateStatus(booking.id, 'CANCELLED', 'Payment failed');
+        // Rollback booking if payment fails
+        await this.bookingRepo.updateStatus(booking.id, 'CANCELLED', 'Payment processing failed');
         throw new Error(`Booking payment failed: ${err.message}`);
       }
     }
@@ -164,12 +163,13 @@ export class BookingService {
       throw new Error('Completed bookings cannot be cancelled.');
     }
 
-    // Process refund: full refund if cancelled before booking start time
+    // Calculate refund according to server-controlled cancellation policy:
+    // Full refund if cancelled prior to start time; subtotal refund if cancelled mid-session
     const now = new Date();
     const isBeforeStart = now < new Date(booking.startTime);
     const refundAmount = isBeforeStart ? booking.totalAmount : booking.subtotal;
 
-    // Update booking status
+    // Atomically transition status
     const updated = await this.bookingRepo.updateStatus(
       booking.id,
       'CANCELLED',
@@ -177,13 +177,14 @@ export class BookingService {
       userId
     );
 
-    // Credit refund to wallet
+    // Credit refund to wallet idempotently
     if (refundAmount > 0) {
       await this.walletService.creditForRefund(
         userId,
         booking.id,
         refundAmount,
-        `Cancellation refund for booking ${booking.bookingNumber}`
+        `Cancellation refund for booking ${booking.bookingNumber}`,
+        `refund_${booking.id}`
       );
     }
 
@@ -200,19 +201,24 @@ export class BookingService {
     }
 
     if (booking.status === 'COMPLETED') {
-      return booking;
+      return booking; // Idempotent completion check
+    }
+
+    if (booking.status === 'CANCELLED') {
+      throw new Error('Cancelled bookings cannot be completed.');
     }
 
     const updated = await this.bookingRepo.updateStatus(bookingId, 'COMPLETED');
     const listing = await this.parkingRepo.findById(booking.listingId);
 
     if (listing) {
-      // Credit host payout (subtotal)
+      // Credit host payout idempotently
       await this.walletService.creditForOwnerEarning(
         listing.ownerId,
         booking.id,
         booking.subtotal,
-        listing.name
+        listing.name,
+        `payout_${booking.id}`
       );
     }
 

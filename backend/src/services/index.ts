@@ -46,6 +46,8 @@ export function createServices(repos: RepositoryContainer = repositories): Servi
     repos.securityRepository,
     repos.bookingRepository,
     repos.vehicleRepository,
+    repos.parkingRepository,
+    repos.communityRepository,
     walletService,
     bookingService
   );

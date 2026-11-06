@@ -61,7 +61,7 @@ export function createRepositories(forceMemory: boolean = false): RepositoryCont
       parkingRepository: new MemoryParkingRepository(seeds.listings),
       bookingRepository: new MemoryBookingRepository(seeds.bookings),
       walletRepository: new MemoryWalletRepository(seeds.wallets, seeds.transactions),
-      communityRepository: new MemoryCommunityRepository(seeds.communities, seeds.approvals),
+      communityRepository: new MemoryCommunityRepository(seeds.communities, seeds.approvals, seeds.memberships),
       securityRepository: new MemorySecurityRepository(),
       reviewRepository: new MemoryReviewRepository(seeds.reviews),
       supportRepository: new MemorySupportRepository(seeds.tickets),

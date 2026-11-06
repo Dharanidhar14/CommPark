@@ -3,6 +3,8 @@ import {
   ICommunityRepository,
   CommunityEntity,
   CommunityApprovalEntity,
+  CommunityMembershipEntity,
+  CommunityRole,
 } from '../ICommunityRepository';
 import { ListingApprovalStatus as RepApprovalStatus } from '../IParkingRepository';
 
@@ -38,6 +40,20 @@ export class PrismaCommunityRepository implements ICommunityRepository {
     };
   }
 
+  private mapMembershipToEntity(m: any): CommunityMembershipEntity {
+    return {
+      id: m.id,
+      communityId: m.communityId,
+      userId: m.userId,
+      role: m.role as CommunityRole,
+      unitOrFlatNumber: m.unitOrFlatNumber,
+      assignedGate: m.assignedGate,
+      isAuthorized: m.isAuthorized,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+    };
+  }
+
   async findById(id: string): Promise<CommunityEntity | null> {
     const c = await this.prisma.community.findUnique({ where: { id } });
     return c ? this.mapCommunityToEntity(c) : null;
@@ -61,6 +77,11 @@ export class PrismaCommunityRepository implements ICommunityRepository {
       orderBy: { submittedAt: 'desc' },
     });
     return items.map((a) => this.mapApprovalToEntity(a));
+  }
+
+  async findApprovalById(approvalId: string): Promise<CommunityApprovalEntity | null> {
+    const a = await this.prisma.communityApproval.findUnique({ where: { id: approvalId } });
+    return a ? this.mapApprovalToEntity(a) : null;
   }
 
   async createApprovalRequest(listingId: string, communityId: string): Promise<CommunityApprovalEntity> {
@@ -104,6 +125,35 @@ export class PrismaCommunityRepository implements ICommunityRepository {
       return this.mapApprovalToEntity(a);
     } catch {
       return null;
+    }
+  }
+
+  async getMembership(communityId: string, userId: string): Promise<CommunityMembershipEntity | null> {
+    const m = await this.prisma.communityMembership.findUnique({
+      where: {
+        communityId_userId: {
+          communityId,
+          userId,
+        },
+      },
+    });
+    return m ? this.mapMembershipToEntity(m) : null;
+  }
+
+  async setMembershipStatus(communityId: string, userId: string, isAuthorized: boolean): Promise<boolean> {
+    try {
+      await this.prisma.communityMembership.update({
+        where: {
+          communityId_userId: {
+            communityId,
+            userId,
+          },
+        },
+        data: { isAuthorized },
+      });
+      return true;
+    } catch {
+      return false;
     }
   }
 }

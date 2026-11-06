@@ -371,6 +371,7 @@ model WalletTransaction {
   id                String                @id @default(uuid())
   walletId          String
   txNumber          String                @unique
+  idempotencyKey    String?               @unique
   type              TransactionTypeEnum
   title             String
   amount            Decimal               @db.Decimal(10, 2)
@@ -389,6 +390,7 @@ model WalletTransaction {
   @@index([walletId])
   @@index([type])
   @@index([txNumber])
+  @@index([idempotencyKey])
 }
 
 model SecurityVerification {
@@ -396,6 +398,7 @@ model SecurityVerification {
   bookingId            String
   guardId              String
   gateNumber           String                 @default("Gate 2")
+  idempotencyKey       String?                @unique
   verifiedAt           DateTime               @default(now())
   licensePlateMatches  Boolean                @default(true)
   result               VerificationResultEnum @default(APPROVED)
